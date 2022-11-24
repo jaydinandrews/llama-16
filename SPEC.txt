@@ -25,7 +25,8 @@ xFE00 - xFFFF Memory Mapped I/O   .5 KiB
 5: SP Stack Pointer Register
 6: BP Base Pointer Register
 7: F  Flags Register:
-        15-6: Unused
+        15-7: Unused
+        6: HALT
         5: GREATER
         4: EQUAL
         3: LESS
