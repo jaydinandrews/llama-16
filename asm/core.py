@@ -318,7 +318,7 @@ class Assembler(object):
 
     def hlt(self):
         self.verify_ops(self.op1 == self.op2 == "")
-        self.pass_action(1, b"\x00\x0F")
+        self.pass_action(1, b"\x00\xF0")
 
     def encode_operand_types(self, opcode, num_ops):
         opcode = opcode << 12
@@ -347,9 +347,6 @@ class Assembler(object):
         return opcode
 
     def immediate_operand(self, operand_type=16):
-        if self.op1_type != "imm":
-            return
-
         operand = self.op1
 
         # Numerical
