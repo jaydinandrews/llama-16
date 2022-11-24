@@ -1,4 +1,4 @@
-# 🦙🛠️ LLAMA-16 Assembler 🛠️🦙
+# 🦙🖥️ LLAMA-16 Emulator 🖥️🦙
 
 ## `./emu/core.py [-h] [-d] program`
 
