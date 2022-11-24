@@ -46,7 +46,7 @@ xFE00 - xFFFF Memory Mapped I/O   .5 KiB
 8: AND  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] & [imm16/reg/mem]
 9: OR   [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] | [imm16/reg/mem]
 A: NOT  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = ~([reg/mem] & [imm16/reg/mem])
-B: CMP* [imm16/reg/mem], [imm16/reg/mem] -> f = compare reg, [imm16/reg/mem]
+B: CMP* [imm16/reg/mem], [reg/mem]       -> f = compare reg, [imm16/reg/mem]
 C: CALL [reg/mem]                        -> [SP--] = IP; IP = [reg/mem]
 D: JNZ  [reg/mem]                        -> IP = [reg/mem] if f != zero
 E: RET                                   -> IP = [SP++]
