@@ -27,6 +27,7 @@ class LLAMACpu(object):
         self._increment_rip()
         instruction = self._mem_read(ip)
         self._decode_instruction(instruction)
+        self.dump_state()
 
     def dump_state(self):
         print("======== LLAMA-16 CPU State ========")
@@ -66,7 +67,7 @@ class LLAMACpu(object):
         return set_flags
 
     def _increment_rip(self):
-        self.registers[RIP_REG] = ushort(self.registers[RIP_REG] + 1)
+        self.registers[RIP_REG] = ushort(self.registers[RIP_REG] + 0x1)
 
     def _mem_read(self, address):
         # Will need to be refactored for memory mapped I/O
@@ -74,6 +75,26 @@ class LLAMACpu(object):
 
     def _mem_write(self, address, value):
         self.memory.mem_write(address, value)
+
+    def _reg_read(self, register):
+        if register == 'a':
+            return self.registers[0]
+        elif register == 'b':
+            return self.registers[1]
+        elif register == 'c':
+            return self.registers[2]
+        elif register == 'd':
+            return self.registers[3]
+
+    def _reg_write(self, register, value):
+        if register == 'a':
+            self.registers[0] = ushort(value)
+        elif register == 'b':
+            self.registers[1] = ushort(value)
+        elif register == 'c':
+            self.registers[2] = ushort(value)
+        elif register == 'd':
+            self.registers[3] = ushort(value)
 
     def _get_ip(self):
         return self.registers[RIP_REG]
@@ -85,39 +106,96 @@ class LLAMACpu(object):
             self.registers[RFLAG_REG]
 
     def _decode_instruction(self, instruction):
-        opcode = (instruction >> 12)
+        opcode = (instruction & 0xF000) >> 12
+            
         if opcode == 0x0:
-            self._mv()
+            self._mv(instruction)
         elif opcode == 0x1:
-            self._lea()
+            self._lea(instruction)
         elif opcode == 0x2:
-            self._push()
+            self._push(instruction)
         elif opcode == 0x3:
-            self._pop()
+            self._pop(instruction)
         elif opcode == 0x4:
-            self._add()
+            self._add(instruction)
         elif opcode == 0x5:
-            self._sub()
+            self._sub(instruction)
         elif opcode == 0x6:
-            self._inc()
+            self._inc(instruction)
         elif opcode == 0x7:
-            self._dec()
+            self._dec(instruction)
         elif opcode == 0x8:
-            self._and()
+            self._and(instruction)
         elif opcode == 0x9:
-            self._or()
+            self._or(instruction)
         elif opcode == 0xA:
-            self._not()
+            self._not(instruction)
         elif opcode == 0xB:
-            self._cmp()
+            self._cmp(instruction)
         elif opcode == 0xC:
-            self._call()
+            self._call(instruction)
         elif opcode == 0xD:
-            self._jnz()
+            self._jnz(instruction)
         elif opcode == 0xE:
-            self._ret()
+            self._ret(instruction)
         elif opcode == 0xF:
-            self._hlt()
-        else:
-            #ERROR
-            pass
+            self._hlt(instruction)
+
+    def _get_op_types(self, instruction):
+        src_encode = (instruction & 0x00F0) >> 4
+        dst_encode = instruction & 0x000F
+        if src_encode == 0:
+            src_type = ''
+        elif src_encode < 0x4:
+            src_type = 'reg'
+        elif src_encode == 0xE:
+            src_type = 'imm'
+        elif src_encode == 0xF:
+            src_type = 'mem_adr'
+
+        if dst_encode == 0:
+            dst_type = ''
+        elif dst_encode < 0x4:
+            dst_type = 'reg'
+        elif dst_encode == 0xF:
+            dst_type = 'mem_adr'
+
+        return (src_type, dst_type)
+
+    def _get_register(self, encode):
+        if encode == 0:
+            return 'a'
+        elif encode == 1:
+            return 'b'
+        elif encode == 2:
+            return 'c'
+        elif encode == 3:
+            return 'd'
+    
+    def _get_next_word(self):
+        word = self._mem_read(self.registers[RIP_REG])
+        self._increment_rip()
+        return word
+
+    def _mv(self, instruction):
+        src_type, dst_type = self._get_op_types(instruction)
+        print(f"DEBUG: src_type, dst_type = {src_type} {dst_type}")
+        if src_type == 'imm':
+            src = self._get_next_word()
+        elif src_type == 'mem_adr':
+            address = self._get_next_word() + IP_START
+            print(f"DEBUG: address is {address}")
+            src = self._mem_read(address)
+            print(f"DEBUG: src is {src}")
+        elif src_type == 'reg':
+            register = self._get_register((instruction & 0x00F0) >> 4)
+            src = self._reg_read(register)
+
+        if dst_type == 'mem_adr':
+            address = self._get_next_word() + IP_START
+            self.mem_write(address, src)
+        elif dst_type == 'reg':
+            register = self._get_register((instruction & 0x000F))
+            self._reg_write(register, src)
+            
+
