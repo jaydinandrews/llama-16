@@ -334,6 +334,15 @@ class Assembler(object):
         self.immediate_operand()
         self.memory_address()
 
+    def sub(self):
+        self.verify_ops(self.op1 != "" and self.op2 != "")
+        #0x05 = 5
+        opcode = 5
+        opcode = self.encode_operand_types(opcode, 2)
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.immediate_operand()
+        self.memory_address()
+
     def inc(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
         # 0x06 = 6

@@ -1,7 +1,7 @@
 ; imm reg
 sub #2, a
 ; imm mem
-sub #2, #:w
+sub #2, [5555]
 ; reg reg
 sub a, b
 ; reg mem
