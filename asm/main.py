@@ -1,4 +1,5 @@
 import argparse
+import sys
 from pathlib import Path
 
 
@@ -92,6 +93,74 @@ class Assembler(object):
         # DEBUG: print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\n'
         #      f'Op1: {self.op1}\nOp2: {self.op2}\nComment: {self.comment}\n')
         return self.label, self.mnemonic, self.op1, self.op2, self.comment
+
+    def process(self):
+        if self.mnemonic == self.op1 == self.op2 == '':
+            self.pass_action(0, b'')
+            return
+
+        if self.mnemonic == 'mv':
+            pass
+        elif self.mnemonic == 'lea':
+            pass
+        elif self.mnemonic == 'push':
+            pass
+        elif self.mnemonic == 'pop':
+            pass
+        elif self.mnemonic == 'add':
+            pass
+        elif self.mnemonic == 'sub':
+            pass
+        elif self.mnemonic == 'inc':
+            pass
+        elif self.mnemonic == 'dec':
+            pass
+        elif self.mnemonic == 'and':
+            pass
+        elif self.mnemonic == 'or':
+            pass
+        elif self.mnemonic == 'not':
+            pass
+        elif self.mnemonic == 'cmp':
+            pass
+        elif self.mnemonic == 'call':
+            pass
+        elif self.mnemonic == 'jnz':
+            pass
+        elif self.mnemonic == 'ret':
+            pass
+        elif self.mnemonic == 'hlt':
+            pass
+        else:
+            self.write_error(f'unrecognized mnemonic "{self.mnemonic}"')
+
+    def write_error(self, message):
+        print(f'Assembly error on line {self.line_number + 1}: {message}')
+        sys.exit(1)
+
+    def pass_action(self, size, output_byte, add_label=True):
+        """On pass 1: build symbol table. On pass 2: generate code.
+
+        Args:
+            size: Number of bytes in the instruction
+            output_byte: Opcode, empty binary is no output generated
+            add_label: True if label should be added
+        """
+
+        if self.pass_number == 1:
+            if self.label and add_label:
+                self.add_label()
+            self.address += size
+        else:
+            if output_byte != b'':
+                self.output += output_byte
+
+    def add_label(self):
+        """Add label to symbol table."""
+        symbol = self.label.lower()
+        if symbol in self.symbol_table:
+            self.write_error(f'duplicate label: "{self.label}"')
+        self.symbol_table[symbol] = self.address
 
 
 if __name__ == "__main__":
