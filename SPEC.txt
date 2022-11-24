@@ -54,7 +54,7 @@ F: HLT
 
 [X] Brackets are used to denote a memory address stored at X
 #imm16 Pound sign is used to denote an immediate value
-r0 Values in registers are denoted with rn where n is an int 0-3
+a,b,c,d Values in registers are denoted with alpha a-d where alpha is writable register
 
 ::: Directives :::
 .data
