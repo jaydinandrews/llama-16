@@ -450,9 +450,9 @@ class Assembler(object):
         string = self.op1
         string = string.strip('\"').strip('\'')
         if len(string) % 2 != 0:
-            string += '\0\0'
-        else:
             string += '\0'
+        else:
+            string += '\0\0'
         data = bytes(string, encoding='utf-8')
         self.pass_action(len(data), data)
 
