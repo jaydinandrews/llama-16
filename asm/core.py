@@ -254,8 +254,8 @@ class Assembler(object):
 
         if self.mnemonic == "mv":
             self.mv()
-        elif self.mnemonic == "lea":
-            self.lea()
+        elif self.mnemonic == "io":
+            self.io()
         elif self.mnemonic == "push":
             self.push()
         elif self.mnemonic == "pop":
@@ -301,14 +301,24 @@ class Assembler(object):
         self.immediate_operand()
         self.memory_address()
 
-    def lea(self):
+    def io(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
+        if self.op1_type == 'imm' and (self.op2 == 'in' or self.op2 == 'IN'):
+            self.write_error("Cannot read word into an immediate.")
         # 0x01 = 1
         opcode = 1
-        opcode = self.encode_operand_types(opcode, 2)
+        # encode just the data type, IN/OUT will be encoding next
+        opcode = self.encode_operand_types(opcode, 1)
+        if self.op2 == 'in' or self.op2 == 'IN':
+            opcode += 0x1
+        elif self.op2 == 'out' or self.op2 == 'OUT':
+            opcode += 0x2
+        else:
+            self.write_error(f"Error parsing io port. {self.op2} is not a valid port, use IN or OUT.")
 
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
         self.immediate_operand()
+        self.memory_address()
 
     def push(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")

@@ -128,7 +128,7 @@ class LLAMACpu(object):
         if opcode == 0x0:
             self._mv(instruction)
         elif opcode == 0x1:
-            self._lea(instruction)
+            self._io(instruction)
         elif opcode == 0x2:
             self._push(instruction)
         elif opcode == 0x3:
@@ -208,11 +208,33 @@ class LLAMACpu(object):
             register = self._get_register((instruction & 0x000F))
             self._reg_write(register, src)
 
-    def _lea(self, instruction):
-        address = self._get_next_word()
-        register = self._get_register((instruction & 0x000F))
-        self._reg_write(register, address)
-        self._update_flags(register)
+    def _io(self, instruction):
+        # dst_type will always return as register since the last nybble
+        # can only be 1 for IN or 2 for OUT
+        src_type, dst_type = self._get_op_types(instruction)
+        dst_encode = (instruction & 0x000F)
+        if dst_encode == 0x1:
+            # Read word from memory mapped I/O
+            word = self._mem_read(0xFFFE)
+            if src_type == 'mem_adr':
+                address = self._get_next_word()
+                self._mem_write(address, word)
+            elif src_type == 'reg':
+                register = self._get_register((instruction & 0x00F0) >> 4)
+                self._reg_write(register, word)
+        elif dst_encode == 0x2:
+            # Write word to memory mapped I/O
+            if src_type == 'imm':
+                src = self._get_next_word()
+                self._mem_write(0xFFFF, src)
+            elif src_type == 'mem_adr':
+                address = self._get_next_word()
+                src = self._mem_read(address)
+                self._mem_write(0xFFFF, src)
+            elif src_type == 'reg':
+                register = self._get_register((instruction & 0x00F0) >> 4)
+                src = self._reg_read(register)
+                self._reg_write(register, src)
 
     def _push(self, instruction):
         src_type, dst_type = self._get_op_types(instruction)
