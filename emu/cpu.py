@@ -218,6 +218,41 @@ class LLAMACpu(object):
         self._mem_write(self.registers[RSP_REG], value)
         self.registers[RSP_REG] += 0x1
 
+    def _pop(self, instruction):
+        value = self._mem_read(self.registers[RSP_REG])
+        self.registers[RSP_REG] -= 0x1
+
+        src_type, dst_type = self._get_op_types(instruction)
+        if src_type == 'mem_adr':
+            address = self._get_next_word()
+            self._mem_write(address, value)
+        elif src_type == 'reg':
+            register = self._get_register((instruction & 0x00F0) >> 4)
+            self._reg_write(register, value)
+
+    def _add(self, instruction):
+        src_type, dst_type = self._get_op_types(instruction)
+        if src_type == 'imm':
+            src = self._get_next_word()
+        elif src_type == 'mem_adr':
+            address = self._get_next_word()
+            src = self._mem_read(address)
+        elif src_type == 'reg':
+            register = self._get_register((instruction & 0x00F0) >> 4)
+            src = self._reg_read(register)
+
+        if dst_type == 'mem_adr':
+            address = self._get_next_word()
+            dst = self._mem_read(address)
+            dst = dst + src
+            self._mem_write(address, dst)
+        elif dst_type == 'reg':
+            register = self._get_register((instruction & 0x000F))
+            dst = self._reg_read(register)
+            dst = dst + src
+            self._reg_write(register, dst)
+            self._update_flags(register)
+
     def _inc(self, instruction):
         src_type, dst_type = self._get_op_types(instruction)
         if src_type == 'mem_adr':
