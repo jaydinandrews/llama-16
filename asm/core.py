@@ -5,7 +5,8 @@ from pathlib import Path
 class Assembler(object):
     line_number, pass_number, address = 0, 1, 0
     output = b""
-    debug_mode = False;
+    debug_mode = False
+    ORIGIN = 0x4000
 
     # the tokens per line
     label, mnemonic, op1, op2, comment = "", "", "", "", ""
@@ -567,7 +568,7 @@ class Assembler(object):
         symbol = self.label.lower()
         if symbol in self.symbol_table:
             self.write_error(f'Duplicate label: "{self.label}"')
-        self.symbol_table[symbol] = self.address
+        self.symbol_table[symbol] = self.address + self.ORIGIN
 
 
 if __name__ == "__main__":
