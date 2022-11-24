@@ -1,5 +1,4 @@
-import argparse
-import sys
+import argparse, sys, time
 from pathlib import Path
 
 
@@ -13,6 +12,7 @@ class Assembler(object):
     symbol_table = {}
 
     def __init__(self):
+        start_time = time.time()
         description = "LLAMA-16 Assembler"
         parser = argparse.ArgumentParser(description=description)
         parser.add_argument("filename",
@@ -42,10 +42,12 @@ class Assembler(object):
 
         if args.outfile:
             outfile = Path(args.outfile)
-            symfile = Path(args.outfile).stem + ".SYM"
-        else:
-            outfile = Path(infile.stem + ".OUT")
-            symfile = Path(infile.stem + ".SYM")
+            if args.symtab:
+                symfile = Path(str(Path(args.outfile))+".SYM")
+        else: # no outfile
+            outfile = Path(args.filename).stem + ".OUT"
+            if args.symtab:
+                symfile = Path(args.filename).stem + ".SYM"
 
         self.assemble(lines)
         bytes_written = self.write_binary_file(outfile, self.output)
@@ -53,9 +55,10 @@ class Assembler(object):
             symbol_count = self.write_symbol_file(symfile, self.symbol_table)
 
         if args.verbose:
-            print(f"{bytes_written} bytes written")
+            print(f"Writing {bytes_written} to {Path(outfile)}")
             if args.symtab:
-                print(f"{symbol_count} symbols written")
+                print(f"Writing {symbol_count} symbols to {Path(symfile)}")
+            print("--- Finished in %.4f seconds ---" % (time.time() - start_time))
 
     def write_binary_file(self, filename, binary_data):
         with open(filename, "wb") as file:
