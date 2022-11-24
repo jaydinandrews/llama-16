@@ -19,9 +19,9 @@ LLAMA-16 is a 16 bit micro-architecture designed with simplicity in mind. The pr
 
 ```
 0: MV   [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [imm16/reg/mem]
-1: IO   [imm16/reg/mem], [IN/OUT]        -> [reg/mem] = IN ; OUT = [imm16/reg/mem]
+1: IO   [imm16/reg/mem], [IN/OUT]        -> [reg/mem] = IN | OUT = [imm16/reg/mem]
 2: PUSH [imm16/reg/mem]                  -> [SP++] = [imm16/reg/mem]
-3: POP  [reg/mem]                        -> reg = [SP--]
+3: POP  [reg/mem]                        -> reg = [--SP]
 4: ADD^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [rem/mem] + [imm16/reg/mem]
 5: SUB^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] - [imm16/reg/mem]
 6: INC^ [reg/mem]                        -> [reg/mem] = [reg/mem]++
@@ -31,8 +31,8 @@ LLAMA-16 is a 16 bit micro-architecture designed with simplicity in mind. The pr
 A: NOT^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = ~([imm16/reg/mem])
 B: CMP* [imm16/reg/mem], [reg/mem]       -> f = compare reg, [imm16/reg/mem]
 C: CALL [LABEL]                          -> [SP++] = IP; IP = [mem of LABEL]
-D: JNZ  [LABEL]                          -> IP = [mem of LABEL/reg/mem] if f != zero
-E: RET                                   -> IP = [SP--]
+D: JNZ  [LABEL]                          -> IP = [mem of LABEL/reg/mem] if !f_zero
+E: RET                                   -> IP = [--SP]
 F: HLT                                   -> f_halt = true
 
 ^These instructions read and load the flags register.
