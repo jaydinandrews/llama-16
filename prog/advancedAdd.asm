@@ -1,8 +1,8 @@
-MAIN: mv OPP1, a
-      mv OPP2, b
-LOOP: inc b
-      dec a
-      cmp #0, a
+MAIN: mv OPP1, b
+      mv OPP2, c
+LOOP: inc c
+      dec b
+      cmp #0, b
       jnz LOOP    ;Inline comment
       hlt
    ;New line comment
