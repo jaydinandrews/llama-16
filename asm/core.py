@@ -16,8 +16,8 @@ class Assembler(object):
         description = "LLAMA-16 Assembler"
         parser = argparse.ArgumentParser(description=description)
         parser.add_argument("filename",
-                            default="-",
-                            help="input file stdin if '-'")
+                            default="",
+                            help="input source file")
         # one output file
         parser.add_argument(
             "-o",
@@ -36,17 +36,11 @@ class Assembler(object):
                             help="increase output verbosity")
         args = parser.parse_args()
 
-        if args.filename == "-":
-            lines = sys.stdin.readLines()
-        else:
-            infile = Path(args.filename)
-            with open(infile, "r") as file:
-                lines = file.readlines()
+        infile = Path(args.filename)
+        with open(infile, "r") as file:
+            lines = file.readlines()
 
-        if args.filename == "-":
-            outfile = args.outfile if args.outfile else "program.OUT"
-            symfile = Path(args.outfile).stem + ".SYM" if args.outfile else "program.SYM"
-        elif args.outfile:
+        if args.outfile:
             outfile = Path(args.outfile)
             symfile = Path(args.outfile).stem + ".SYM"
         else:
