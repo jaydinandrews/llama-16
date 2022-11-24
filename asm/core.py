@@ -39,8 +39,8 @@ class Assembler(object):
                             help="print extra debugging information")
         args = parser.parse_args()
 
-        if(args.debug):
-            debug_mode = True;
+        if args.debug:
+            self.debug_mode = True
 
         infile = Path(args.filename)
         with open(infile, "r") as file:
@@ -61,14 +61,15 @@ class Assembler(object):
             symbol_count = self.write_symbol_file(symfile, self.symbol_table)
 
         if args.verbose:
-            print(f"Writing {bytes_written} to {Path(outfile)}")
+            print(f"Writing {bytes_written} bytes to {Path(outfile)}")
             if args.symtab:
                 print(f"Writing {symbol_count} symbols to {Path(symfile)}")
             print("--- Finished in %.4f seconds ---" % (time.time() - start_time))
 
     def write_binary_file(self, filename, binary_data):
         with open(filename, "wb") as file:
-            # print(f'DEBUG OUTPUT: {binary_data}')
+            if self.debug_mode:
+                print(f'DEBUG binary output: {binary_data}')
             file.write(binary_data)
         return len(binary_data)
 
@@ -131,7 +132,7 @@ class Assembler(object):
             if directive == ".string":
                 self.op1_type = "string"
 
-            if debug_mode:
+            if self.debug_mode:
                 print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
                         f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
             return (
@@ -205,7 +206,7 @@ class Assembler(object):
                 self.label = self.label.lower()
 
         self.mnemonic = self.mnemonic.lower()
-        if debug_mode:
+        if self.debug_mode:
             print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
                 f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
 
