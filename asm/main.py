@@ -16,15 +16,55 @@ class Assembler(object):
         parser = argparse.ArgumentParser(description=description)
         parser.add_argument('filename', default='-', help='input file stdin if \'-\'')
         # one output file
+        parser.add_argument('-o', '--outfile', help='output file, program.OUT is default if -o not specified')
         # one for saving symbol table?
+        parser.add_argument('-s', '--symtab', action='store_true', help='save symbol table to file')
         # one for verbose option?
+        parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
         args = parser.parse_args()
 
-        in_file = Path(args.filename)
-        with open(in_file, 'r') as file:
-            lines = file.readlines()
+        if args.filename == '-':
+            lines = sys.stdin.readLines()
+        else:
+            infile = Path(args.filename)
+            with open(infile, 'r') as file:
+                lines = file.readlines()
+        
+        if args.filename == '-':
+            outfile = args.outfile if args.outfile else 'program.OUT'
+            symtab = Path(args.outfile).stem + '.SYM' if args.outfile else 'program.SYM'
+        elif args.outfile:
+            outfile = Path(args.outfile)
+            symfile = Path(args.outfile).stem + '.SYM'
+        else:
+            outfile = Path(infile.stem + '.OUT')
+            symfile = Path(infile.stem + '.SYM')
 
         self.assemble(lines)
+        bytes_written = self.write_binary_file(outfile, self.output)
+        if args.symtab:
+            symbol_count = self.write_symbol_file(symfile, self.symbol_table)
+
+        if args.verbose:
+            print(f'{bytes_written} bytes written')
+            if args.symtab:
+                print(f'{symbol_count} symbols written')
+
+    def write_binary_file(self, filename, binary_data):
+        with open(filename, 'wb') as file:
+            file.write(binary_data)
+        return len(binary_data)
+
+    def write_symbol_file(self, filename, table):
+        symbol_count = len(table)
+        if symbol_count == 0:
+            return symbol_count
+        
+        with open(filename, 'w', encoding='utf-8') as file:
+            for symbol in table:
+                print(f'{table[symbol]:04X} {symbole[:16].upper()}', file=file)
+
+        return symbol_count
 
     def assemble(self, lines):
         self.pass_number = 1
@@ -72,8 +112,8 @@ class Assembler(object):
             if directive == '.string':
                 self.op1_type = 'string'
 
-            print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
-                  f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
+            #print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
+            #      f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
             return self.label, self.mnemonic, self.op1, self.op1_type, self.op2, self.op2_type, self.comment
 
         # Second operand
@@ -137,8 +177,8 @@ class Assembler(object):
                 self.label = self.label.lower()
 
         self.mnemonic = self.mnemonic.lower()
-        print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
-              f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
+        #print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
+        #      f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
         return self.label, self.mnemonic, self.op1, self.op1_type, self.op2, self.op2_type, self.comment
 
     def parse_directive(self, line):

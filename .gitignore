@@ -1,7 +1,10 @@
 # === START CUSTOM ===
 logs/
 **/*.swp
+**/*.swo
 notes/
+**/*.OUT
+**/*.SYM
 # === END CUSTOM ===
 
 # === START TEMPLATE ===
