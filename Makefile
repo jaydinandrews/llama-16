@@ -1,10 +1,10 @@
 test:
-	python3 -m unittest discover -v
+	python3 -m unittest -v
 
 clean:
 	find . | grep -E "__pycache__" | xargs rm -rf
-	rm *.OUT
-	rm *.SYM
+	find . | grep -E *.OUT | xargs rm -rf
+	find . | grep -E *.SYM | xargs rm -rf
 
 deps:
 	pip install coverage flake8
