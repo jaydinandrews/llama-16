@@ -5,6 +5,7 @@ logs/
 notes/
 **/*.OUT
 **/*.SYM
+demo/
 # === END CUSTOM ===
 
 # === START TEMPLATE ===
