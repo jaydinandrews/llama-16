@@ -208,6 +208,11 @@ class LLAMACpu(object):
         self._increment_rip()
         return word
 
+    def _twos(self, value):
+        if (value & (1 << 15)) != 0:
+            value = value - (1 << 16)
+        return value
+
     def _mv(self, instruction):
         src_type, dst_type = self._get_op_types(instruction)
         if src_type == 'imm':
@@ -271,11 +276,13 @@ class LLAMACpu(object):
             # Read src and write out to standard out
             if src_type == 'imm':
                 word = self._get_next_word()
-                print(word, end='')
+                data = self._twos(word)
+                print(data, end='')
             elif src_type == 'reg':
                 register = self._get_register((instruction & 0x00F0) >> 4)
                 word = self._reg_read(register)
-                print(word, end='')
+                data = self._twos(word)
+                print(data, end='')
             elif src_type == 'mem_adr':
                 address = self._get_next_word()
                 terminated = False
