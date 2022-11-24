@@ -1,0 +1,76 @@
+.................................................................
+.%%......%%.......%%%%...%%...%%...%%%%.............%%......%%...
+.%%......%%......%%..%%..%%%.%%%..%%..%%...........%%%.....%%....
+.%%......%%......%%%%%%..%%.%.%%..%%%%%%..%%%%%%....%%....%%%%%..
+.%%......%%......%%..%%..%%...%%..%%..%%............%%....%%..%%.
+.%%%%%%..%%%%%%..%%..%%..%%...%%..%%..%%..........%%%%%%...%%%%..
+.................................................................
+
+LLAMA-16 - LLA Micro Architecture
+
+::: Memory Layout :::
+
+x0000 - x3FFF General Purpose ROM 16 KiB
+x4000 - xFDFF General Purpose RAM 47 KB
+xFA00 - xFDEF Recommended Stack   64 KiB
+xFE00 - xFFFF Memory Mapped I/O   .5 KiB
+
+::: Registers :::
+
+0: A  General Purpose Register
+1: B  General Purpose Register
+2: C  General Purpose Register
+3: D  General Purpose Register
+4: IP Instruction Pointer Register
+5: SP Stack Pointer Register
+6: BP Base Pointer Register
+7: F  Flags Register:
+        15-6: Unused
+        5: GREATER
+        4: EQUAL
+        3: LESS
+        2: NEGATIVE
+        1: ZERO
+        0: POSITIVE
+
+::: Instructions :::
+<operation> <source operand> <desintation operand>
+0: MV   [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [imm16/reg/mem]
+1: LEA  [LABEL], [reg]                   -> [reg] = [mem of LABEL]
+2: PUSH [imm16/reg/mem]                  -> [SP--] = [imm16/reg/mem]
+3: POP  [reg]                            -> reg = [SP++]
+4: ADD  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [rem/mem] + [imm16/reg/mem]
+5: SUB  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] - [imm16/reg/mem]
+6: INC  [reg/mem]                        -> [reg/mem] = [reg/mem]++
+7: DEC  [reg/mem]                        -> [reg/mem] = [reg/mem]++
+8: AND  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] & [imm16/reg/mem]
+9: OR   [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] | [imm16/reg/mem]
+A: NOT  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = ~([reg/mem] & [imm16/reg/mem])
+B: CMP* [imm16/reg/mem], [imm16/reg/mem] -> f = compare reg, [imm16/reg/mem]
+C: CALL [reg/mem]                        -> [SP--] = IP; IP = [reg/mem]
+D: JMP  [reg/mem]                        -> IP = [reg/mem]
+E: RET                                   -> IP = [SP++]
+F: HLT
+
+[X] Brackets are used to denote a memory address stored at X
+#imm16 Pound sign is used to denote an immediate value
+r0 Values in registers are denoted with rn where n is an int 0-3
+
+::: Directives :::
+.data
+  Used to define numbers. Legal numbers are positive and negative integers.
+  Ex:
+    .data +7, -14, 14, 9
+.string
+  Used to define a single string. Legal strings are enclosed within quotes " ".
+  Ex:
+    .string "Hello World"
+
+::: Labels :::
+Labels are conventionally in all caps. Labels are technically optional. They precede
+any operation name and operands.
+Ex:
+  <label name>: <operation> <source operand> <destination operand>
+  <label name>: <operation> <operand>
+  <label name>: <operation>
+All the above are valid given the opcode is valid.
