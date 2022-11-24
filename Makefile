@@ -13,6 +13,8 @@ lint:
 	flake8 --exit-zero .
 
 clean:
-	rm -rf **/__pycache__
+	rm -r **/__pycache__
+	rm *.OUT
+	rm *.SYM
 
-.PHONY: all test clean
+.PHONY: deps all test clean
