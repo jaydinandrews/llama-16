@@ -33,6 +33,11 @@ class Emulator(object):
             if self.debug_mode:
                 self.dump_state()
             sys.exit(0)
+        except OverflowError:
+            print("OverflowError detected! Closing emulator...")
+            if self.debug_mode:
+                self.dump_state()
+            sys.exit(1)
         except (Exception, KeyboardInterrupt) as e:
             self.dump_state()
             raise e

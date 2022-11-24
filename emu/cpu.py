@@ -232,27 +232,58 @@ class LLAMACpu(object):
         src_type, dst_type = self._get_op_types(instruction)
         dst_encode = (instruction & 0x000F)
         if dst_encode == 0x1:
-            # Read word from memory mapped I/O
-            word = self._mem_read(0xFFFE)
-            if src_type == 'mem_adr':
-                address = self._get_next_word()
-                self._mem_write(address, word)
-            elif src_type == 'reg':
-                register = self._get_register((instruction & 0x00F0) >> 4)
-                self._reg_write(register, word)
-        elif dst_encode == 0x2:
-            # Write word to memory mapped I/O
-            if src_type == 'imm':
-                src = self._get_next_word()
-                self._mem_write(0xFFFF, src)
+            # Read in input and write out src
+            inp = input('\0')
+            isInt = False
+            try:
+                data = int(inp)
+                isInt = True
+            except OverflowError:
+                raise OverflowError
+            except ValueError:
+                # Input is a string of characters
+                if len(inp) % 2 == 0:
+                    data = inp + '\0\0'
+                else:
+                    data = inp + '\0'
+
+            if src_type == 'reg':
+                register = self._get_register(((instruction &0x00F0) >> 4))
+                if isInt:
+                    self._reg_write(register, data)
+                else:
+                    data = (ord(inp[0]) << 8) + ord(inp[1])
+                    self._reg_write(register, data)
             elif src_type == 'mem_adr':
                 address = self._get_next_word()
-                src = self._mem_read(address)
-                self._mem_write(0xFFFF, src)
+                if isInt:
+                    self._mem_write(address, data)
+                else:
+                    for i in range(0, len(data), 2):
+                        first = ord(data[i])
+                        second = ord(data[i+1])
+                        word = (second << 8) + first
+                        self._mem_write(address, word)
+                        address += 1
+        elif dst_encode == 0x2:
+            # Read src and write out to standard out
+            if src_type == 'imm':
+                src = self._get_next_word()
+                print(src, end='')
             elif src_type == 'reg':
                 register = self._get_register((instruction & 0x00F0) >> 4)
                 src = self._reg_read(register)
-                self._reg_write(register, src)
+                print(src, end='')
+            elif src_type == 'mem_adr':
+                address = self._get_next_word()
+                terminated = False
+                while not terminated:
+                    word = self._mem_read(address)
+                    first = chr(word & 0x00FF)
+                    second = chr(word & 0xFF00)
+                    print(first + second, end='')
+                    if first == '\0' or second == '\0':
+                        terminated = True
 
     def _push(self, instruction):
         src_type, dst_type = self._get_op_types(instruction)
