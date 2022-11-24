@@ -56,10 +56,10 @@ LLAMA-16 - LLA Micro Architecture
 4: ADD^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [rem/mem] + [imm16/reg/mem]
 5: SUB^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] - [imm16/reg/mem]
 6: INC^ [reg/mem]                        -> [reg/mem] = [reg/mem]++
-7: DEC^ [reg/mem]                        -> [reg/mem] = [reg/mem]++
+7: DEC^ [reg/mem]                        -> [reg/mem] = [reg/mem]--
 8: AND^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] & [imm16/reg/mem]
 9: OR^  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] | [imm16/reg/mem]
-A: NOT^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = ~([reg/mem] & [imm16/reg/mem])
+A: NOT^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = ~([imm16/reg/mem])
 B: CMP* [imm16/reg/mem], [reg/mem]       -> f = compare reg, [imm16/reg/mem]
 C: CALL [LABEL]                          -> [SP++] = IP; IP = [mem of LABEL]
 D: JNZ  [LABEL]                          -> IP = [mem of LABEL/reg/mem] if f != zero
