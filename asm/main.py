@@ -3,6 +3,7 @@ import sys, re
 
 class Assembler(object):
     _lines = []
+    labels = {}
 
     def __init__(self, asm_file):
         for line in open(asm_file, 'r'):
@@ -10,6 +11,7 @@ class Assembler(object):
 
     def assemble(self):
         self.pass_one()
+        print(self.labels)
 
     def pass_one(self):
         for line in self._lines:
@@ -21,6 +23,8 @@ class Assembler(object):
 
             # Replace commas
             line = line.replace(',', ' ')
+
+            # TODO: Directives?
 
             print(line)
 

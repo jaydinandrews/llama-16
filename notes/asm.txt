@@ -1,20 +1,20 @@
 First Pass:
-  Replace string with ASCII codes ""
-  Delete comments ;
-  Replace commas with spaces ,
-  Process and cut preprocessors #
-  Cut and Store label definitions in dictionary
-  Split line into list representing bytes
-  Replace mnemonics with opcodes
-  Replace 16 bit words
+  [] Replace string with ASCII codes ""
+  [X] Delete comments ;
+  [X] Replace commas with spaces ,
+  [] Process and cut preprocessors #
+  [] Cut and Store label definitions in dictionary
+  [] Split line into list representing bytes
+  [] Replace mnemonics with opcodes
+  [] Replace 16 bit words
 
 Second Pass:
-  Insert placeholder after each label reference
-  Calculate the address of each line
-  Update dictionary to map labels to addresses
+  [] Insert placeholder after each label reference
+  [] Calculate the address of each line
+  [] Update dictionary to map labels to addresses
 
 Third Pass:
-  Replace each label reference and placeholder with address MSB LSB
+  [] Replace each label reference and placeholder with address MSB LSB
 
 Fourth Pass: (?)
-  Write binary to file
+  [] Write binary to file
