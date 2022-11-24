@@ -285,9 +285,8 @@ class Assembler(object):
         self.verify_ops(self.op1 != "" and self.op2 != "")
         # 0x00 = 0
         opcode = 0
-        opcode = self.encode_operand_types(opcode)
+        opcode = self.encode_operand_types(opcode, 2)
         
-        print(f'DEBUG OPCODE IS: {opcode}')
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
         self.immediate_operand()
 
@@ -295,20 +294,24 @@ class Assembler(object):
         self.verify_ops(self.op1 != "" and self.op2 == "")
         # 0x06 = 6
         opcode = 6
-        opcode = self.encode_operand_types(opcode)
+        opcode = self.encode_operand_types(opcode, 1)
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
 
     def dec(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
         # 0x07 = 7
-        opcode = 7 + (self.register_offset(self.op1) << 3)
+        opcode = 7
+        opcode = self.encode_operand_types(opcode, 1)
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
 
     def cmp(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
         # 0x0B = 11
-        opcode = 11 + self.register_offset(self.op2)
-        self.pass_action(1, opcode.to_bytes(2, byteorder="little"))
+        opcode = 11
+        opcode = self.encode_operand_types(opcode, 2)
+        print(f'opcode is {opcode}')
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.immediate_operand()
 
     def jnz(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
@@ -318,7 +321,8 @@ class Assembler(object):
         self.verify_ops(self.op1 == self.op2 == "")
         self.pass_action(1, b"\x00\x0F")
 
-    def encode_operand_types(self, opcode):
+    def encode_operand_types(self, opcode, num_ops):
+        opcode = opcode << 12
         if self.op1_type == "imm":
             opcode += (14 << 4)
         elif self.op1_type == "reg":
@@ -329,7 +333,10 @@ class Assembler(object):
             pass
         else:
             self.write_error(f'invalid operand "{self.op1}"')
-        
+
+        if num_ops == 1:
+            return opcode
+
         if self.op2_type == "imm":
             opcode += 14
         if self.op2_type == "reg":
@@ -343,14 +350,11 @@ class Assembler(object):
         return opcode
 
     def immediate_operand(self, operand_type=16):
-        if (self.op1_type != "imm" or self.op2_type != "imm"):
+        if self.op1_type != "imm":
             return
-        if self.mnemonic != "cmp":
-            operand = self.op1
-        else: #TODO: check if second op is imm
-            pass
 
-        print(f'IMMEDIATE  HEREEEE')
+        operand = self.op1
+
         # Numerical
         if operand[0].isdigit():
             number = int(operand)
