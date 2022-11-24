@@ -1,7 +1,6 @@
 # === START CUSTOM ===
 logs/
 **/*.swp
-notes/*
 notes/
 # === END CUSTOM ===
 
