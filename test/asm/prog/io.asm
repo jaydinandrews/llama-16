@@ -8,3 +8,4 @@ io #33, OUT
 io a, OUT
 ; mem OUT
 io [5555], OUT
+hlt

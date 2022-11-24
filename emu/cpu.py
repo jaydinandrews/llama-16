@@ -81,7 +81,7 @@ class LLAMACpu(object):
         return self.memory.mem_read(address)
 
     def _mem_write(self, address, value):
-        self.memory.mem_write(address, value)
+        self.memory.mem_write(address, ushort(value))
 
     def _reg_read(self, register):
         if register == 'a':
@@ -101,19 +101,19 @@ class LLAMACpu(object):
 
     def _reg_write(self, register, value):
         if register == 'a':
-            self.registers[0] = value
+            self.registers[0] = ushort(value)
         elif register == 'b':
-            self.registers[1] = value
+            self.registers[1] = ushort(value)
         elif register == 'c':
-            self.registers[2] = value
+            self.registers[2] = ushort(value)
         elif register == 'd':
-            self.registers[3] = value
+            self.registers[3] = ushort(value)
         elif register == 'ip':
-            self.registers[RIP_REG] = value
+            self.registers[RIP_REG] = ushort(value)
         elif register == 'sp':
-            self.registers[RSP_REG] = value
+            self.registers[RSP_REG] = ushort(value)
         elif register == 'bp':
-            self.registers[RBP_REG] = value
+            self.registers[RBP_REG] = ushort(value)
 
     def _get_ip(self):
         return self.registers[RIP_REG]
@@ -234,14 +234,16 @@ class LLAMACpu(object):
         if dst_encode == 0x1:
             # Read in input and write out src
             inp = input('\0')
-            isInt = False
             try:
                 data = int(inp)
                 isInt = True
+                if (data > 32767 or data < -32768):
+                    raise OverflowError
             except OverflowError:
                 raise OverflowError
             except ValueError:
                 # Input is a string of characters
+                isInt = False
                 if len(inp) % 2 == 0:
                     data = inp + '\0\0'
                 else:
@@ -252,7 +254,7 @@ class LLAMACpu(object):
                 if isInt:
                     self._reg_write(register, data)
                 else:
-                    data = (ord(inp[1]) << 8) + ord(inp[0])
+                    data = (ord(inp[0]) << 8) + ord(inp[1])
                     self._reg_write(register, data)
             elif src_type == 'mem_adr':
                 address = self._get_next_word()
@@ -273,9 +275,7 @@ class LLAMACpu(object):
             elif src_type == 'reg':
                 register = self._get_register((instruction & 0x00F0) >> 4)
                 word = self._reg_read(register)
-                first = chr(word & 0x00FF)
-                second = chr((word & 0xFF00) >> 8)
-                print(first + second, end='')
+                print(word, end='')
             elif src_type == 'mem_adr':
                 address = self._get_next_word()
                 terminated = False
@@ -283,7 +283,7 @@ class LLAMACpu(object):
                     word = self._mem_read(address)
                     first = chr(word & 0x00FF)
                     second = chr((word & 0xFF00) >> 8)
-                    print(first + second, end='')
+                    print(f"{first}{second}", end='')
                     address += 1
                     if first == '\0' or second == '\0':
                         terminated = True
