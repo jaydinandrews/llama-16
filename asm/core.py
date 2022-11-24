@@ -426,7 +426,7 @@ class Assembler(object):
 
         try:
             data = int(self.op1)
-            self.pass_action(2, data.to_bytes(2, byteorder="little"))
+            self.pass_action(2, data.to_bytes(2, byteorder="little", signed=True))
         except ValueError:
             self.write_error(f"Error reading \"{self.op1}\", not an integer")
 
@@ -484,6 +484,8 @@ class Assembler(object):
         # Numerical
         if operand[0].isdigit():
             number = int(operand)
+        elif operand.startswith('-'):
+            number = int(operand)
         # Label
         elif self.pass_number == 2:
             operand = operand.lower()
@@ -492,7 +494,7 @@ class Assembler(object):
             number = int(self.symbol_table[operand])
 
         if self.pass_number == 2:
-            self.pass_action(2, number.to_bytes(2, byteorder="little"))
+            self.pass_action(2, number.to_bytes(2, byteorder="little", signed=True))
 
     def memory_address(self):
         if self.op1_type == "mem_adr":
