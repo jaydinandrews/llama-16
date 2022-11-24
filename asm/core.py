@@ -436,7 +436,10 @@ class Assembler(object):
 
         string = self.op1
         string = string.strip('\"').strip('\'')
-        string += '\0'
+        if len(string) % 2 != 0:
+            string += '\0\0'
+        else:
+            string += '\0'
         data = bytes(string, encoding='utf-8')
         self.pass_action(len(data), data)
 
@@ -475,7 +478,7 @@ class Assembler(object):
             return
 
         operand = self.op1
-        self.address += 2
+        self.address += 1
 
         # Numerical
         if operand[0].isdigit():
@@ -485,7 +488,7 @@ class Assembler(object):
             operand = operand.lower()
             if operand not in self.symbol_table:
                 self.write_error(f'Undefined label "{operand}"')
-            number = self.symbol_table[operand]
+            number = int(self.symbol_table[operand])
 
         if self.pass_number == 2:
             self.pass_action(2, number.to_bytes(2, byteorder="little"))
@@ -493,7 +496,7 @@ class Assembler(object):
     def memory_address(self):
         if self.op1_type == "mem_adr":
             operand = self.op1
-            self.address += 2
+            self.address += 1
 
             if operand[0].isdigit():
                 number = int(operand, 16)
@@ -507,7 +510,7 @@ class Assembler(object):
 
         if self.op2_type == "mem_adr":
             operand = self.op2
-            self.address += 2
+            self.address += 1
 
             if operand[0].isdigit():
                 number = int(operand, 16)
@@ -549,11 +552,12 @@ class Assembler(object):
             size: Number of bytes in the instruction
             output_byte: Opcode, empty binary is no output generated
         """
+        align = size % 2
 
         if self.pass_number == 1:
             if self.label:
                 self.add_label()
-            self.address += size
+            self.address += int(size/2) + align
         else:
             if output_byte != b"":
                 self.output += output_byte
