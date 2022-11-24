@@ -62,7 +62,20 @@ class Assembler(object):
             # Strip whitespace as before
             comment_left = comment_right.rstrip()
 
-        # TODO: directives .data and .string
+        # TODO: Directives
+        d_label, directive, d_args = self.parse_directive(comment_left)
+        if directive != '':
+            self.label = d_label.lower()
+            self.mnemonic = directive
+            self.op1 = d_args
+            if directive == '.data':
+                self.op1_type = 'data'
+            if directive == '.string':
+                self.op1_type = 'string'
+
+            print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
+                  f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
+            return self.label, self.mnemonic, self.op1, self.op1_type, self.op2, self.op2_type, self.comment
 
         # Second operand
         op2_left, op2_separator, op2_right = comment_left.rpartition(',')
@@ -128,6 +141,31 @@ class Assembler(object):
         print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
               f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
         return self.label, self.mnemonic, self.op1, self.op1_type, self.op2, self.op2_type, self.comment
+
+    def parse_directive(self, line):
+        d_label, directive, d_args = '', '', ''
+        d_type = ''
+        left1, sep1, right1 = line.partition('.data')
+        d_type = '.data'
+        if sep1 == '':
+            left1, sep1, right1 = line.partition('.string')
+            d_type = '.string'
+        if sep1 == '':
+            return d_label, directive, d_args
+
+        directive = d_type
+        d_args = right1.strip()
+
+        left2, sep2, right2 = left1.partition(':')
+        if sep2 == ':':
+            left2 = left2.strip()
+            if not left2.isalnum() or left2[0].isdigit():
+                self.write_error(f'Invalid label "{left2}"')
+            d_label = left2
+        elif sep2 != ':' and left2.strip() != '':
+            self.write_error(f'Invalid label "{left2}"')
+
+        return d_label, directive, d_args
 
     def process(self):
         if self.mnemonic == self.op1 == self.op2 == '':

@@ -3,9 +3,9 @@ MAIN: mv OPP1, a
 LOOP: inc b
       dec a
       cmp #0, a
-      jnz LOOP    ;this is a comment
+      jnz LOOP    ;Inline comment
       hlt
-   ;This is also comment
+   ;New line comment
 
-OPP1: .data 3
+OPP1: .data 3 ;Directive comment
 OPP2: .data 5
