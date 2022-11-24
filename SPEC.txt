@@ -53,18 +53,23 @@ LLAMA-16 - LLA Micro Architecture
 1: LEA  [LABEL], [reg]                   -> [reg] = [mem of LABEL]
 2: PUSH [imm16/reg/mem]                  -> [SP--] = [imm16/reg/mem]
 3: POP  [reg/mem]                        -> reg = [SP++]
-4: ADD  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [rem/mem] + [imm16/reg/mem]
-5: SUB  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] - [imm16/reg/mem]
-6: INC  [reg/mem]                        -> [reg/mem] = [reg/mem]++
-7: DEC  [reg/mem]                        -> [reg/mem] = [reg/mem]++
-8: AND  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] & [imm16/reg/mem]
-9: OR   [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] | [imm16/reg/mem]
-A: NOT  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = ~([reg/mem] & [imm16/reg/mem])
+4: ADD^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [rem/mem] + [imm16/reg/mem]
+5: SUB^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] - [imm16/reg/mem]
+6: INC^ [reg/mem]                        -> [reg/mem] = [reg/mem]++
+7: DEC^ [reg/mem]                        -> [reg/mem] = [reg/mem]++
+8: AND^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] & [imm16/reg/mem]
+9: OR^  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] | [imm16/reg/mem]
+A: NOT^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = ~([reg/mem] & [imm16/reg/mem])
 B: CMP* [imm16/reg/mem], [reg/mem]       -> f = compare reg, [imm16/reg/mem]
 C: CALL [LABEL]                          -> [SP--] = IP; IP = [mem of LABEL]
 D: JNZ  [LABEL]                          -> IP = [mem of LABEL/reg/mem] if f != zero
 E: RET                                   -> IP = [SP++]
 F: HLT
+
+^ These instructions read and load the flags register.
+* Compare has its own set of flags: greater, equal, and less. Currently, no instructions use
+  those flags however cmp will set the positive, zero, and negative flags: positive if src is
+  greater than dst, negative if src is less than dst, and zero if src equals dst.
 
 [X] Brackets are used to denote a memory address stored at X
 #imm16 Pound sign is used to denote an immediate value
