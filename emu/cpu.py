@@ -252,7 +252,7 @@ class LLAMACpu(object):
                 if isInt:
                     self._reg_write(register, data)
                 else:
-                    data = (ord(inp[0]) << 8) + ord(inp[1])
+                    data = (ord(inp[1]) << 8) + ord(inp[0])
                     self._reg_write(register, data)
             elif src_type == 'mem_adr':
                 address = self._get_next_word()
@@ -268,20 +268,23 @@ class LLAMACpu(object):
         elif dst_encode == 0x2:
             # Read src and write out to standard out
             if src_type == 'imm':
-                src = self._get_next_word()
-                print(src, end='')
+                word = self._get_next_word()
+                print(word, end='')
             elif src_type == 'reg':
                 register = self._get_register((instruction & 0x00F0) >> 4)
-                src = self._reg_read(register)
-                print(src, end='')
+                word = self._reg_read(register)
+                first = chr(word & 0x00FF)
+                second = chr((word & 0xFF00) >> 8)
+                print(first + second, end='')
             elif src_type == 'mem_adr':
                 address = self._get_next_word()
                 terminated = False
                 while not terminated:
                     word = self._mem_read(address)
                     first = chr(word & 0x00FF)
-                    second = chr(word & 0xFF00)
+                    second = chr((word & 0xFF00) >> 8)
                     print(first + second, end='')
+                    address += 1
                     if first == '\0' or second == '\0':
                         terminated = True
 
