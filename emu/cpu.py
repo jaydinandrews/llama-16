@@ -326,6 +326,50 @@ class LLAMACpu(object):
             self._reg_write(register, dst)
             self._update_flags(register)
 
+    def _or(self, instruction):
+        src_type, dst_type = self._get_op_types(instruction)
+        if src_type == 'imm':
+            src = self._get_next_word()
+        elif src_type == 'mem_adr':
+            address = self._get_next_word()
+            src = self._mem_read(address)
+        elif src_type == 'reg':
+            register = self._get_register((instruction & 0x00F0) >> 4)
+            src = self._reg_read(register)
+
+        if dst_type == 'mem_adr':
+            address = self._get_next_word()
+            dst = self._mem_read(address)
+            dst = dst | src
+            self._mem_write(address, dst)
+        elif dst_type == 'reg':
+            register = self._get_register((instruction & 0x00F))
+            dst = self._reg_read(register)
+            dst = dst | src
+            self._reg_write(register, dst)
+            self._update_flags(register)
+
+    def _not(self, instruction):
+        src_type, dst_type = self._get_op_types(instruction)
+        if src_type == 'imm':
+            src = self._get_next_word()
+        elif src_type == 'mem_adr':
+            address = self._get_next_word()
+            src = self.mem_read(address)
+        elif src_type == 'reg':
+            register = self._get_register((instruction & 0x00F0) >> 4)
+            src = self._reg_read(register)
+
+        if dst_type == 'mem_adr':
+            address = self._get_next_word()
+            dst = self._mem_read(address)
+            self._mem_write(address, ~dst)
+        elif dst_type == 'reg':
+            register = self._get_register((instruction & 0x000F))
+            dst = self._reg_read(register)
+            self._reg_write(register, ~dst)
+            self._update_flags(register)
+
     def _cmp(self, instruction):
         # 0000 000H 0GEL 0NZP
         src_type, dst_type = self._get_op_types(instruction)
