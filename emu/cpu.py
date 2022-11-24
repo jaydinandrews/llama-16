@@ -222,8 +222,8 @@ class LLAMACpu(object):
         self.registers[RSP_REG] += 0x1
 
     def _pop(self, instruction):
-        value = self._mem_read(self.registers[RSP_REG])
         self.registers[RSP_REG] -= 0x1
+        value = self._mem_read(self.registers[RSP_REG])
 
         src_type, dst_type = self._get_op_types(instruction)
         if src_type == 'mem_adr':
@@ -350,6 +350,16 @@ class LLAMACpu(object):
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x2
         elif src > dst:
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x1
+
+    def _call(self, instruction):
+        sub_routine = self._get_next_word()
+        self._mem_write(self.registers[RSP_REG], self.registers[RIP_REG])
+        self.registers[RSP_REG] += 0x1
+        self.registers[RIP_REG] = sub_routine
+
+    def _ret(self):
+        self.registers[RSP_REG] -= 0x1
+        self.registers[RIP_REG] = self._mem_read(self.registers[RSP_REG])
 
     def _jnz(self, instruction):
         flags = self.registers[RFLAG_REG]
