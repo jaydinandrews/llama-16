@@ -5,6 +5,7 @@ from pathlib import Path
 class Assembler(object):
     line_number, pass_number, address = 0, 1, 0
     output = b""
+    debug_mode = False;
 
     # the tokens per line
     label, mnemonic, op1, op2, comment = "", "", "", "", ""
@@ -19,11 +20,9 @@ class Assembler(object):
                             default="",
                             help="input source file")
         # one output file
-        parser.add_argument(
-            "-o",
-            "--outfile",
-            help="output file, {programName}.OUT is default if -o not specified",
-        )
+        parser.add_argument("-o",
+                            "--outfile",
+                            help="output file, {programName}.OUT is default if -o not specified")
         # one for saving symbol table?
         parser.add_argument("-s",
                             "--symtab",
@@ -34,7 +33,14 @@ class Assembler(object):
                             "--verbose",
                             action="store_true",
                             help="increase output verbosity")
+        parser.add_argument("-d",
+                            "--debug",
+                            action="store_true",
+                            help="print extra debugging information")
         args = parser.parse_args()
+
+        if(args.debug):
+            debug_mode = True;
 
         infile = Path(args.filename)
         with open(infile, "r") as file:
@@ -125,8 +131,9 @@ class Assembler(object):
             if directive == ".string":
                 self.op1_type = "string"
 
-            #print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
-            #      f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
+            if debug_mode:
+                print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
+                        f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
             return (
                 self.label,
                 self.mnemonic,
@@ -198,8 +205,10 @@ class Assembler(object):
                 self.label = self.label.lower()
 
         self.mnemonic = self.mnemonic.lower()
-        #print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
-        #      f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
+        if debug_mode:
+            print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
+                f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
+
         return (
             self.label,
             self.mnemonic,
