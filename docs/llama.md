@@ -4,7 +4,7 @@ Welcome to the LLAMA-16 wiki! These docs are here to help you on your journey of
 
 ## What is LLAMA-16?
 
-LLAMA-16 is a 16-bit microarchitecture designed with simplicity in mind. It is an attempt to scale back the colossal complexity of x86_64 assembly into something that is a little more digestable and palatable format. You can find a summary of the project in the [README](../README.md). 
+LLAMA-16 is a 16-bit microarchitecture designed with simplicity in mind. It is an attempt to scale back the colossal complexity of x86_64 assembly into something that is a little more digestible and palatable format. You can find a summary of the project in the [README](../README.md). 
 
 ## How do I write programs for LLAMA-16?
 
@@ -16,7 +16,7 @@ When you've got your binary saved, learn how to run it in the [LLAMA-16 Emulator
 
 ## Can't find what you are looking for?
 
-Organizing a project like this can be a slow and monumentus task for one lowly mortal undergrad developer so there might be some gaps in the docs. Worry not my assembly blueberries! Feel free to open an issue and tag it with the **Documentation Request/Error** label. Want to contribute to the project by drafting the docs? Open a Merge Request with your changes/drafts and lets talk about them!
+Organizing a project like this can be a slow and monumental task for one lowly mortal undergrad developer so there might be some gaps in the docs. Worry not my assembly blueberries! Feel free to open an issue and tag it with the **Documentation Request/Error** label. Want to contribute to the project by drafting the docs? Open a Merge Request with your changes/drafts and lets talk about them!
 
 ## Want to contribute?
 

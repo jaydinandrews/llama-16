@@ -12,7 +12,7 @@ Examples of valid labels include: `LABEL:`, `23F:`, `@HERE:`, `?IFZERO:`.
 The mnemonic field contains of a single mnemonic that represents a specific machine instruction. The instructions described later in this document are identified by a mnemonic label which must appear in this field. If the instruction uses operand(s), at least one space must follow the mnemonic before the first operand. 
 
 ##### Operand(s) Field
-The operand field contains information that the defines precisely the operation to be performed by the instruction. Depending on the instruction in the mnemonic field, the operand field may consist of none, one, or two operands seperated by a comma.
+The operand field contains information that the defines precisely the operation to be performed by the instruction. Depending on the instruction in the mnemonic field, the operand field may consist of none, one, or two operands separated by a comma.
 
 There are four types of information that may be required as operands: a register, immediate data, a label, or a 16-bit memory address.
 * A register will be specified by specific sequence of one or two characters. There are seven user accessible registers: four general purpose and three address registers.
@@ -21,12 +21,12 @@ There are four types of information that may be required as operands: a register
   * Finally, the instruction pointer register is referenced by `ip`. As a general guideline, user programs will not directly modify the address in this register.
 * An immediate value is a decimal value specified by a leading number sign ( # ). The number must be representable as a 16-bit signed number (values between -32768 and +32767).
 * A label is a name used as a reference to an instructions address in the program. If a label is used as an operand, it must be defined exactly once somewhere else in the program.
-* A 16-bit memory address has to be referenced by a 4 character hexadecimal value (addresses between x0000 and xFFFF) and should be surrounded by brackets [ ].
+* A 16-bit memory address has to be referenced by a 4 character hexadecimal value (addresses between 0x0000 and 0xFFFF) and should be surrounded by brackets [ ].
 
 Each instruction has a specific set of valid operands it can use. All instructions and their variants are specified further in this document. Each instruction variant can also be found in its specified source file in the [test/asm](../test/asm) directory of the project.
 
 ##### Comment Field
-The comment field is used for the programer to document their programs or keep notes. They will be ignored by the assembler. The only rule governing this field is that it must begin with a semicolon ( ; ) and cannot consist of another semicolon.
+The comment field is used for the programmer to document their programs or keep notes. They will be ignored by the assembler. The only rule governing this field is that it must begin with a semicolon ( ; ) and cannot consist of another semicolon.
 
 ## The Instruction Set
 ### Data Transfer Instruction
@@ -43,7 +43,7 @@ LLAMA-16 uses the same instruction for both reading in input data and writing ou
 
 When reading in data from standard in, data can be stored in either a register or in memory. When storing data in a register, only the first 16 bits of input will be stored while the rest will be discarded.
 
-When writing data to standard out, data can be read from immediates, registers, or memory. When reading data from memory to be printed out, all words will be printed until a null character is found.
+When writing data to standard out, data can be read from an immediate, a register, or memory. When reading data from memory to be printed out, all words will be printed until a null character is found.
 
 ***PLEASE READ THE [Quirks of LLAMA-16](./quirks.md) REGARDING HOW THE I/O INSTRUCTION TREATS DATA STORED IN REGISTERS VS MEMORY.***
 
@@ -61,14 +61,14 @@ The push instruction is used to stored data in the built in stack. When the oper
 The pop instruction is used to retrieve the top most data in the stack. That data can be stored in a register or another memory location specified by the operand.
 
 ### Arithmetic Instructions
-Arithmetic instructions are used to mathematically manipulate data stored in the machine. Before you learn about the different instructions, its important to look at how LLAMA-16 represents numbers. Since LLAMA-16 has an data width of 16 bits and uses Two's Compliment to represent signed numbers, the range of numbers it can handle are between -32768 (0xFFFF) and +32767 (7FFF). If a number cannot be represented in 16 bits, an overflow error will occur and the machine will halt.
+Arithmetic instructions are used to mathematically manipulate data stored in the machine. Before you learn about the different instructions, its important to look at how LLAMA-16 represents numbers. Since LLAMA-16 has an data width of 16 bits and uses Two's Compliment to represent signed numbers, the range of numbers it can handle are between -32768 (0xFFFF) and +32767 (0x7FFF). If a number cannot be represented in 16 bits, an overflow error will occur and the machine will halt.
 
-However, if a number can be represented in 16 bits then LLAMA-16 will operate on it, negative or positive. This means that if the result of an operantion is representable in 16 bits *and* is less than -32768 or greater than +32767, the value will underflow or overflow, but still be stored as a valid value. Keep this in mind when writing your programs!
+However, if a number can be represented in 16 bits then LLAMA-16 will operate on it, negative or positive. This means that if the result of an operation is representable in 16 bits *and* is less than -32768 or greater than +32767, the value will underflow or overflow, but still be stored as a valid value. Keep this in mind when writing your programs!
 
 #### Addition - `add`
 `add [imm16/reg/mem], [reg, mem]`
 
-The addition instruction is used to sum two values together. The 16-bit signed number stored in the first operand will be added to the 16-bit signed number stored in the second operand and then stored in the location specified by the second operand. If the result is representable in 16-bitsand is less than -32768 or greater than +32767, the value will underflow or overflow. If the result is not representable in 16 bits, the machine will halt with an overflow error. Keep this in mind when writing your programs!
+The addition instruction is used to sum two values together. The 16-bit signed number stored in the first operand will be added to the 16-bit signed number stored in the second operand and then stored in the location specified by the second operand. If the result is representable in 16-bits and is less than -32768 or greater than +32767, the value will underflow or overflow. If the result is not representable in 16 bits, the machine will halt with an overflow error. Keep this in mind when writing your programs!
 
 #### Subtraction - `sub`
 `sub [imm16/reg/mem], [reg, mem]`
@@ -123,8 +123,8 @@ The return instruction pops the value currently stored on top of the stack into 
 
 ### Halt Instruction
 #### Halt - `hlt`
-The halt instruction is used to set the machine into a halted state: that is, not actively interpretting program instructions.
-> In the current state of the developmeney, it is not possible for user programs to intentionally raise an error and then halt. A user program using the halt instruction will cause the emulator to exit with an "exited normally" status.
+The halt instruction is used to set the machine into a halted state: that is, not actively interpreting program instructions.
+> In the current state of the development, it is not possible for user programs to intentionally raise an error and then halt. A user program using the halt instruction will cause the emulator to exit with an "exited normally" status.
 
 ## Variable Directives
 Variable directives allow a program to store values in memory before runtime. For example, these directives can be used to store initial values of variables or text prompts to be printed to the user. These directives **must** be labeled when they are declared. This allows programs to directly reference the label pointing to the data instead of the data itself. See rules on the valid labels in the [Syntax](#label-field) section of the ISA.
@@ -138,6 +138,6 @@ Examples of valid data declarations include: `ONE: .data 1`, `NEGATIVE: .data -1
 #### String - `.string`
 `[LABEL]: .string "[string]"`
 
-The string directive is used to declare constants of character strings. The string must be between double or single quotes. If the string is to consist of double or single quotes, those marks should be escaped with a blackslash `\"` or `\'`. A string can contain any number of ASCII characters within the delimited quotation marks. The only constraint if the ammount of memory available for the string to be stored. Strings are stored in little endian in sequence. They are terminated with either one or two null characters represented as `0` in ASCII.  
+The string directive is used to declare constants of character strings. The string must be between double or single quotes. If the string is to consist of double or single quotes, those marks should be escaped with a backslash `\"` or `\'`. A string can contain any number of ASCII characters within the delimited quotation marks. The only constraint if the amount of memory available for the string to be stored. Strings are stored in little endian in sequence. They are terminated with either one or two null characters represented as `0` in ASCII.  
 
 Examples of valid string declarations include: `PROMPT: .string "Enter a number: "`, `OUTPUT: .string 'An escaped \'quote\''`.

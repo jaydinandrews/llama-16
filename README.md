@@ -1,6 +1,6 @@
 # 🦙 LLAMA-16 🦙
 
-Have you ever cried while trying to implement a recursive fibonacci calculator in x86_64 assembly? Have you tried to take your exploration of computer science closer to the metal only to learn that abstraction is actually a protector of your mental well being? Have you ever tried programming in LC-3 assembly and begrudgingly learned how to manually implement a stack with arithmetic operators?
+Have you ever cried while trying to implement a recursive Fibonacci calculator in x86_64 assembly? Have you tried to take your exploration of computer science closer to the metal only to learn that abstraction is actually a protector of your mental well being? Have you ever tried programming in LC-3 assembly and begrudgingly learned how to manually implement a stack with arithmetic operators?
 
 If you answered yes to any of the previous questions, you might be entitled to compensation from Kernighan and Ritchie. While I am not sure how to get that, I can at least offer you a potentially more enjoyable manner of exploring system level architectures with the LLAMA-16.
 
