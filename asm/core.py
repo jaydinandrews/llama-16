@@ -1,4 +1,6 @@
-import argparse, sys, time
+import argparse
+import sys
+import time
 from pathlib import Path
 
 
@@ -44,7 +46,7 @@ class Assembler(object):
             outfile = Path(args.outfile)
             if args.symtab:
                 symfile = str(Path(args.outfile))+".SYM"
-        else: # no outfile
+        else:  # no outfile
             outfile = Path(args.filename).stem + ".OUT"
             if args.symtab:
                 symfile = Path(args.filename).stem + ".SYM"
@@ -135,7 +137,7 @@ class Assembler(object):
 
             if self.debug_mode:
                 print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
-                        f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
+                      f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
             return (
                 self.label,
                 self.mnemonic,
@@ -209,7 +211,7 @@ class Assembler(object):
         self.mnemonic = self.mnemonic.lower()
         if self.debug_mode:
             print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
-                f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
+                  f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
 
         return (
             self.label,
@@ -294,14 +296,14 @@ class Assembler(object):
         # 0x00 = 0
         opcode = 0
         opcode = self.encode_operand_types(opcode, 2)
-        
+
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
         self.immediate_operand()
         self.memory_address()
 
     def lea(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
-        #0x01 = 1
+        # 0x01 = 1
         opcode = 1
         opcode = self.encode_operand_types(opcode, 2)
 
@@ -310,7 +312,7 @@ class Assembler(object):
 
     def push(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
-        #0x02 = 2
+        # 0x02 = 2
         opcode = 2
         opcode = self.encode_operand_types(opcode, 1)
 
@@ -320,7 +322,7 @@ class Assembler(object):
 
     def pop(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
-        #0x03 = 3
+        # 0x03 = 3
         opcode = 3
         opcode = self.encode_operand_types(opcode, 1)
 
@@ -329,7 +331,7 @@ class Assembler(object):
 
     def add(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
-        #0x04 = 4
+        # 0x04 = 4
         opcode = 4
         opcode = self.encode_operand_types(opcode, 2)
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
@@ -338,7 +340,7 @@ class Assembler(object):
 
     def sub(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
-        #0x05 = 5
+        # 0x05 = 5
         opcode = 5
         opcode = self.encode_operand_types(opcode, 2)
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
@@ -367,7 +369,7 @@ class Assembler(object):
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
         self.immediate_operand()
         self.memory_address()
-    
+
     def mnemonic_or(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
         # 0x08 = 9
@@ -451,7 +453,8 @@ class Assembler(object):
         elif self.op1_type == "reg":
             opcode += (self.register_offset(self.op1) << 4)
         elif self.op1_type == "mem_adr" or self.op1_type == "label":
-            if self.debug_mode: print(f"DEBUG: Symbol table: {self.symbol_table}")
+            if self.debug_mode:
+                print(f"DEBUG: Symbol table: {self.symbol_table}")
             opcode += (15 << 4)
         elif self.op2_type == "":
             pass
@@ -464,7 +467,8 @@ class Assembler(object):
         if self.op2_type == "reg":
             opcode += (self.register_offset(self.op2))
         elif self.op2_type == "mem_adr" or self.op2_type == "label":
-            if self.debug_mode: print(f"DEBUG: Symbol table: {self.symbol_table}")
+            if self.debug_mode:
+                print(f"DEBUG: Symbol table: {self.symbol_table}")
             opcode += 15
         elif self.op2_type == "":
             pass
@@ -475,7 +479,7 @@ class Assembler(object):
     def immediate_operand(self):
         # This function also handles LABEL operands. Should this be its own function
         # for ease of readablity and debugging?
-        if(self.op1_type != "imm" and self.op1_type != "label"):
+        if (self.op1_type != "imm" and self.op1_type != "label"):
             return
 
         operand = self.op1

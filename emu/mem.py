@@ -27,7 +27,6 @@ class LLAMAMemory(object):
                 print(f"{hex(i)}: {hex(self.memory[i])}")
         print("=========== END OF Memory Map ===========")
 
-
     def _read_program(self, filename):
         prog_bytes = array.array('H', range(0))
         with open(filename, 'rb') as f:

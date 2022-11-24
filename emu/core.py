@@ -1,7 +1,7 @@
-import sys, argparse
+import sys
+import argparse
 from mem import LLAMAMemory
 from cpu import LLAMACpu, CpuHalted
-from pathlib import Path
 
 
 class Emulator(object):
@@ -24,7 +24,7 @@ class Emulator(object):
         self.memory = LLAMAMemory()
         self.memory.load_program(args.program)
         self.cpu = LLAMACpu(self.memory, self.debug_mode)
-        
+
         try:
             while True:
                 self.cpu.exec_next_instruction()
@@ -36,7 +36,7 @@ class Emulator(object):
         except (Exception, KeyboardInterrupt) as e:
             self.dump_state()
             raise e
-   
+
     def dump_state(self):
         self.cpu.dump_state()
         self.memory.dump_mem_map()

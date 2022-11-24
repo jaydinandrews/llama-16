@@ -1,4 +1,4 @@
-import ctypes, sys
+import ctypes
 
 IP_START = 0x4000
 SP_START = 0xDFC0
@@ -7,6 +7,7 @@ RIP_REG = 4
 RSP_REG = 5
 RBP_REG = 6
 RFLAG_REG = 7
+
 
 def ushort(value):
     return ctypes.c_ushort(value).value
@@ -45,29 +46,29 @@ class LLAMACpu(object):
         print(f"SP   : {hex(self.registers[RSP_REG])}")
         print(f"BP   : {hex(self.registers[RBP_REG])}")
         print(f"FLAGS: {self._get_flags()}\n")
-        
+
     def _get_flags(self):
         # 0000 000H 0GEL 0NZP
         set_flags = []
         flags_code = self.registers[RFLAG_REG]
         flags = flags_code & 0x0007
-        if(flags == 4):
+        if flags == 4:
             set_flags.append('negative')
-        elif(flags == 2):
+        elif flags == 2:
             set_flags.append('zero')
-        elif(flags == 1):
+        elif flags == 1:
             set_flags.append('positive')
 
         cmp_flags = (flags_code & 0x0070) >> 4
-        if(cmp_flags == 4):
+        if cmp_flags == 4:
             set_flags.append('greater')
-        elif(cmp_flags == 2):
+        elif cmp_flags == 2:
             set_flags.append('equal')
-        elif(cmp_flags == 1):
+        elif cmp_flags == 1:
             set_flags.append('less')
 
         halt_flag = (flags_code & 0x0100) >> 8
-        if(halt_flag == 1):
+        if halt_flag == 1:
             set_flags.append('halt')
 
         return set_flags
@@ -116,14 +117,14 @@ class LLAMACpu(object):
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x4
         else:
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x1
-        
+
         if compare_flags != 0x0:
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] & 0xFF0F
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + compare_flags
 
     def _decode_instruction(self, instruction):
         opcode = (instruction & 0xF000) >> 12
-            
+
         if opcode == 0x0:
             self._mv(instruction)
         elif opcode == 0x1:
@@ -183,7 +184,7 @@ class LLAMACpu(object):
             return 'c'
         elif encode == 3:
             return 'd'
-    
+
     def _get_next_word(self):
         word = self._mem_read(self.registers[RIP_REG])
         self._increment_rip()
@@ -323,7 +324,7 @@ class LLAMACpu(object):
         if dst_type == 'mem_adr':
             address = self._get_next_word()
             dst = self._mem_read(address)
-            dst =  dst & src
+            dst = dst & src
             self._mem_write(address, dst)
         elif dst_type == 'reg':
             register = self._get_register((instruction & 0x000F))
@@ -361,19 +362,17 @@ class LLAMACpu(object):
             src = self._get_next_word()
         elif src_type == 'mem_adr':
             address = self._get_next_word()
-            src = self.mem_read(address)
+            src = self._mem_read(address)
         elif src_type == 'reg':
             register = self._get_register((instruction & 0x00F0) >> 4)
             src = self._reg_read(register)
 
         if dst_type == 'mem_adr':
             address = self._get_next_word()
-            dst = self._mem_read(address)
-            self._mem_write(address, ~dst)
+            self._mem_write(address, ~src)
         elif dst_type == 'reg':
             register = self._get_register((instruction & 0x000F))
-            dst = self._reg_read(register)
-            self._reg_write(register, ~dst)
+            self._reg_write(register, ~src)
             self._update_flags(register)
 
     def _cmp(self, instruction):
