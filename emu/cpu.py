@@ -259,6 +259,8 @@ class LLAMACpu(object):
                 if isInt:
                     self._reg_write(register, data)
                 else:
+                    if len(inp) < 2:
+                        inp += ('\0')
                     data = (ord(inp[0]) << 8) + ord(inp[1])
                     self._reg_write(register, data)
             elif src_type == 'mem_adr':
