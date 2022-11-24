@@ -144,7 +144,6 @@ class Assembler(object):
 
     def parse_directive(self, line):
         d_label, directive, d_args = '', '', ''
-        d_type = ''
         left1, sep1, right1 = line.partition('.data')
         d_type = '.data'
         if sep1 == '':
