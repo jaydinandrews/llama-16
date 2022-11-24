@@ -62,7 +62,6 @@ class Assembler(object):
             # Strip whitespace as before
             comment_left = comment_right.rstrip()
 
-        # TODO: Directives
         d_label, directive, d_args = self.parse_directive(comment_left)
         if directive != '':
             self.label = d_label.lower()
@@ -241,6 +240,31 @@ class Assembler(object):
         if symbol in self.symbol_table:
             self.write_error(f'duplicate label: "{self.label}"')
         self.symbol_table[symbol] = self.address
+
+    # x00
+    # mv [imm16/reg/mem], [reg/mem]
+    def mv(self):
+        self.verify_ops(self.op1 != '' and self.op2 != '')
+        src_type = self.check_src()
+        dst_type = self.check_dest()
+
+    def check_src(self):
+        if self.op1_type == 'imm':
+            return 2048
+        elif self.op1_type == 'reg':
+            return 1024
+        elif self.op1_type == 'mem':
+            return 512
+        else:
+            self.write_error(f'unknown operand type: "{self.op1_type}"')
+
+    def check_dst(self):
+        if self.op1_type == 'reg':
+            return 128
+        elif self.op1_type == 'mem':
+            return 64
+        else:
+            self.write_error(f'unknown operand type: "{self.op1_type}"')
 
 
 if __name__ == "__main__":
