@@ -255,7 +255,7 @@ class LLAMACpu(object):
                     data = inp + '\0'
 
             if src_type == 'reg':
-                register = self._get_register(((instruction &0x00F0) >> 4))
+                register = self._get_register(((instruction & 0x00F0) >> 4))
                 if isInt:
                     self._reg_write(register, data)
                 else:
