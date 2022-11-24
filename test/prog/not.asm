@@ -1,7 +1,7 @@
 ; imm reg
 not #2, a
 ; imm mem
-not #2, #3
+not #2, [5555]
 ; reg reg
 not a, b
 ; reg mem

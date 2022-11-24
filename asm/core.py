@@ -365,7 +365,24 @@ class Assembler(object):
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
         self.immediate_operand()
         self.memory_address()
+    
+    def mnemonic_or(self):
+        self.verify_ops(self.op1 != "" and self.op2 != "")
+        # 0x08 = 9
+        opcode = 9
+        opcode = self.encode_operand_types(opcode, 2)
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.immediate_operand()
+        self.memory_address()
 
+    def mnemonic_not(self):
+        self.verify_ops(self.op1 != "" and self.op2 != "")
+        # 0x0A = 10
+        opcode = 10
+        opcode = self.encode_operand_types(opcode, 2)
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.immediate_operand()
+        self.memory_address()
 
     def cmp(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
@@ -376,12 +393,25 @@ class Assembler(object):
         self.immediate_operand()
         self.memory_address()
 
+    def call(self):
+        self.verify_ops(self.op1 != "" and self.op2 == "")
+        # 0x0C = 12
+        opcode = 12
+        opcode = self.encode_operand_types(opcode, 1)
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.immediate_operand()
+
     def jnz(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
         opcode = 13
         opcode = self.encode_operand_types(opcode, 1)
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
         self.immediate_operand()
+
+    def ret(self):
+        self.verify_ops(self.op1 == "" and self.op2 == "")
+        # 0x0E = 14
+        self.pass_action(2, b"\x00\xE0")
 
     def hlt(self):
         self.verify_ops(self.op1 == self.op2 == "")
@@ -397,13 +427,6 @@ class Assembler(object):
             self.pass_action(2, data.to_bytes(2, byteorder="little"))
         except ValueError:
             self.write_error(f"Error reading \"{self.op1}\", not an integer")
-
-    def calculate_size(self):
-        size = 0
-        sizes = {"label": 2, "mem_adr": 2, "reg": 0, "imm": 2}
-        size += sizes[self.op1_type] if self.op1 != "" else 0
-        size += sizes[self.op2_type] if self.op2 != "" else 0
-        return size + 2
 
     def encode_operand_types(self, opcode, num_ops):
         opcode = opcode << 12
@@ -434,6 +457,8 @@ class Assembler(object):
         return opcode
 
     def immediate_operand(self, operand_type=16):
+        # This function also handles LABEL operands. Should this be its own function
+        # for ease of readablity and debugging?
         if(self.op1_type != "imm" and self.op1_type != "label"):
             return
 
