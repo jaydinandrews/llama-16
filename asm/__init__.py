@@ -1,1 +1,1 @@
-from core import Assembler
+from .core import Assembler
