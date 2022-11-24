@@ -37,10 +37,12 @@ LLAMA-16 - LLA Micro Architecture
 6: BP Base Pointer Register
 7: F  Flags Register:
         15-7: Unused
-        6: HALT
-        5: GREATER
-        4: EQUAL
-        3: LESS
+        8: HALT
+        7: Unused
+        6: GREATER
+        5: EQUAL
+        4: LESS
+        3: Unused
         2: NEGATIVE
         1: ZERO
         0: POSITIVE
