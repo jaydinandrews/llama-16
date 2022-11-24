@@ -357,6 +357,16 @@ class Assembler(object):
         opcode = self.encode_operand_types(opcode, 1)
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
 
+    def mnemonic_and(self):
+        self.verify_ops(self.op1 != "" and self.op2 != "")
+        # 0x08 = 8
+        opcode = 8
+        opcode = self.encode_operand_types(opcode, 2)
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.immediate_operand()
+        self.memory_address()
+
+
     def cmp(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
         # 0x0B = 11
@@ -364,6 +374,7 @@ class Assembler(object):
         opcode = self.encode_operand_types(opcode, 2)
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
         self.immediate_operand()
+        self.memory_address()
 
     def jnz(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")

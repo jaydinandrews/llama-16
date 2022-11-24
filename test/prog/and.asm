@@ -1,7 +1,7 @@
 ; imm reg
 and #2, a
 ; imm mem
-and #2, #3
+and #2, [5555]
 ; reg reg
 and a, b
 ; reg mem
