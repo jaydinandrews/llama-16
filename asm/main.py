@@ -204,6 +204,10 @@ class Assembler(object):
             self.ret()
         elif self.mnemonic == 'hlt':
             self.hlt()
+        elif self.mnemonic == '.data':
+            self.directive_data()
+        elif self.mnemonic == '.string':
+            self.directive_string()
         else:
             self.write_error(f'unrecognized mnemonic "{self.mnemonic}"')
 

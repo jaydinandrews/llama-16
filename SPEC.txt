@@ -34,7 +34,7 @@ xFE00 - xFFFF Memory Mapped I/O   .5 KiB
         0: POSITIVE
 
 ::: Instructions :::
-<operation> <source operand> <desintation operand>
+<operation> <source operand> <destination operand>
 0: MV   [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [imm16/reg/mem]
 1: LEA  [LABEL], [reg]                   -> [reg] = [mem of LABEL]
 2: PUSH [imm16/reg/mem]                  -> [SP--] = [imm16/reg/mem]
