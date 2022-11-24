@@ -1,4 +1,4 @@
-import argparse, sys
+import argparse
 from pathlib import Path
 
 
@@ -7,7 +7,7 @@ class Assembler(object):
     output = b''
 
     # the tokens per line
-    label, opcode, op1, op2, comment = '', '', '', '', ''
+    label, mnemonic, op1, op2, comment = '', '', '', '', ''
 
     symbol_table = {}
 
@@ -39,7 +39,7 @@ class Assembler(object):
         """Parse and tokenize line of source code."""
         # Based on this algorithm from Brian Robert Callahan:
         # https://briancallahan.net/blog/20210410.html
-        self.label, self.opcode, self.op1, self.op2, self.comment = '', '', '', '', ''
+        self.label, self.mnemonic, self.op1, self.op2, self.comment = '', '', '', '', ''
 
         preprocess = line.lstrip()  # remove leading whitespace
         preprocess = preprocess.translate({9: 32})  # replace tabs with spaces
@@ -73,24 +73,25 @@ class Assembler(object):
             else:
                 op1_left = op1_right.strip()
 
-        # Opcode from label
-        opcode_left, opcode_separator, opcode_right = op1_left.rpartition(':')
-        if opcode_separator:
-            self.opcode = opcode_right.strip()
-            self.label = opcode_left.strip()
+        # mnemonic from label
+        mnemonic_left, mnemonic_separator, mnemonic_right = op1_left.rpartition(':')
+        if mnemonic_separator:
+            self.mnemonic = mnemonic_right.strip()
+            self.label = mnemonic_left.strip()
         else:
-            opcode_left = opcode_right.rstrip()
-            self.opcode = opcode_left.strip()
+            mnemonic_left = mnemonic_right.rstrip()
+            self.mnemonic = mnemonic_left.strip()
 
-        # Fix when opcode ends up as first operand
-        if self.opcode == '' and self.op1 != '' and self.op2 == '':
-            self.opcode = self.op1.strip()
+        # Fix when mnemonic ends up as first operand
+        if self.mnemonic == '' and self.op1 != '' and self.op2 == '':
+            self.mnemonic = self.op1.strip()
             self.op1 = ''
 
         self.label = self.label.lower()
-        self.opcode = self.opcode.lower()
-        print(f'Label: {self.label}\nOpcode: {self.opcode}\nOp1: {self.op1}\nOp2: {self.op2}\nComment: {self.comment}\n')
-        return self.label, self.opcode, self.op1, self.op2, self.comment
+        self.mnemonic = self.mnemonic.lower()
+        # DEBUG: print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\n'
+        #      f'Op1: {self.op1}\nOp2: {self.op2}\nComment: {self.comment}\n')
+        return self.label, self.mnemonic, self.op1, self.op2, self.comment
 
 
 if __name__ == "__main__":
