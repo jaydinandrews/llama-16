@@ -88,7 +88,8 @@ class Assembler(object):
         self.pass_number = 1
         try:
             for line_number, line in enumerate(lines):
-                print(f"Line number is {self.line_number}")
+                if self.debug_mode:
+                    print(f"Line number is {self.line_number}")
                 self.parse(line)
                 self.process()
                 self.line_number += 1
@@ -100,7 +101,8 @@ class Assembler(object):
         self.line_number = 0
         try:
             for line_number, line in enumerate(lines):
-                print(f"Line number is {self.line_number}")
+                if self.debug_mode:
+                    print(f"Line number is {self.line_number}")
                 self.parse(line)
                 self.process()
                 self.line_number += 1
