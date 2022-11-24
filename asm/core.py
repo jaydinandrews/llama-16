@@ -19,20 +19,13 @@ class Assembler(object):
         parser.add_argument("filename",
                             default="",
                             help="input source file")
-        # one output file
         parser.add_argument("-o",
                             "--outfile",
                             help="output file, {programName}.OUT is default if -o not specified")
-        # one for saving symbol table?
         parser.add_argument("-s",
                             "--symtab",
                             action="store_true",
                             help="save symbol table to file")
-        # one for verbose option?
-        parser.add_argument("-v",
-                            "--verbose",
-                            action="store_true",
-                            help="increase output verbosity")
         parser.add_argument("-d",
                             "--debug",
                             action="store_true",
@@ -60,7 +53,7 @@ class Assembler(object):
         if args.symtab:
             symbol_count = self.write_symbol_file(symfile, self.symbol_table)
 
-        if args.verbose:
+        if args.debug:
             print(f"Writing {bytes_written} bytes to {Path(outfile)}")
             if args.symtab:
                 print(f"Writing {symbol_count} symbols to {Path(symfile)}")
