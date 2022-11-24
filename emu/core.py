@@ -23,18 +23,18 @@ class Emulator(object):
 
         self.memory = LLAMAMemory()
         self.memory.load_program(args.program)
-        self.cpu = LLAMACpu(self.memory)
+        self.cpu = LLAMACpu(self.memory, self.debug_mode)
         
         try:
             while True:
                 self.cpu.exec_next_instruction()
         except CpuHalted:
             print("CPU halted. Closing emulator...")
+            if self.debug_mode:
+                self.dump_state()
             sys.exit(0)
         except (Exception, KeyboardInterrupt) as e:
             self.dump_state()
-            if self.debug_mode:
-                self.dump_memory()
             raise e
    
     def dump_state(self):

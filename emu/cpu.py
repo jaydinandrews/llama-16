@@ -17,19 +17,23 @@ class CpuHalted(Exception):
 
 
 class LLAMACpu(object):
+    debug_mode = False
 
-    def __init__(self, memory):
+    def __init__(self, memory, debug_mode=False):
+        if debug_mode:
+            self.debug_mode = True
         self.memory = memory
         self.registers = [0, 0, 0, 0, IP_START, SP_START, BP_START, 0]
 
     def exec_next_instruction(self):
+        if self.debug_mode:
+            self.dump_state()
         ip = self._get_ip()
         self._increment_rip()
         instruction = self._mem_read(ip)
         self._decode_instruction(instruction)
         if self.registers[RFLAG_REG] & 0x0F00:
             raise CpuHalted
-        self.dump_state()
 
     def dump_state(self):
         print("======== LLAMA-16 CPU State ========")
@@ -106,7 +110,6 @@ class LLAMACpu(object):
         flags = self.registers[RFLAG_REG]
         self.registers[RFLAG_REG] = (flags & 0xFFF0)
         value = self._reg_read(register)
-        print(f"value of register {register}: {value}")
         if value > 0:
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x1
         elif value == 0:
@@ -153,18 +156,14 @@ class LLAMACpu(object):
     def _get_op_types(self, instruction):
         src_encode = (instruction & 0x00F0) >> 4
         dst_encode = instruction & 0x000F
-        if src_encode == 0:
-            src_type = ''
-        elif src_encode < 0x4:
+        if src_encode < 0x4:
             src_type = 'reg'
         elif src_encode == 0xE:
             src_type = 'imm'
         elif src_encode == 0xF:
             src_type = 'mem_adr'
 
-        if dst_encode == 0:
-            dst_type = ''
-        elif dst_encode < 0x4:
+        if dst_encode < 0x4:
             dst_type = 'reg'
         elif dst_encode == 0xF:
             dst_type = 'mem_adr'
@@ -191,19 +190,33 @@ class LLAMACpu(object):
         if src_type == 'imm':
             src = self._get_next_word()
         elif src_type == 'mem_adr':
-            address = self._get_next_word() + IP_START
+            address = self._get_next_word()
             src = self._mem_read(address)
         elif src_type == 'reg':
             register = self._get_register((instruction & 0x00F0) >> 4)
             src = self._reg_read(register)
 
         if dst_type == 'mem_adr':
-            address = self._get_next_word() + IP_START
-            self.mem_write(address, src)
+            address = self._get_next_word()
+            self._mem_write(address, src)
         elif dst_type == 'reg':
             register = self._get_register((instruction & 0x000F))
             self._reg_write(register, src)
             self._update_flags(register)
+
+    def _push(self, instruction):
+        src_type, dst_type = self._get_op_types(instruction)
+        if src_type == 'imm':
+            value = self._get_next_word()
+        elif src_type == 'mem_adr':
+            address = self._get_next_word()
+            value = self._mem_read(address)
+        elif src_type == 'reg':
+            register = self._get_register((instruction & 0x00F0) >> 4)
+            value = self._reg_read(register)
+
+        self._mem_write(self.registers[RSP_REG], value)
+        self.registers[RSP_REG] += 0x1
 
     def _inc(self, instruction):
         src_type, dst_type = self._get_op_types(instruction)
@@ -235,7 +248,7 @@ class LLAMACpu(object):
         if src_type == 'imm':
             src = self._get_next_word()
         elif src_type == 'mem_adr':
-            address = self._get_next_word() + IP_START
+            address = self._get_next_word()
             src = self._mem_read(address)
 
         if dst_type == 'mem_adr':
@@ -256,7 +269,7 @@ class LLAMACpu(object):
 
     def _jnz(self, instruction):
         flags = self.registers[RFLAG_REG]
-        address = self._get_next_word() + IP_START
+        address = self._get_next_word()
         if (flags & 0x0002) != 0x2:
             self.registers[RIP_REG] = ushort(address)
 
