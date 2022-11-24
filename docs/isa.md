@@ -2,7 +2,7 @@
 
 ## The Language
 ### Syntax
-LLAMA-16 Assembly mimics the Intel style of instruction syntax. An instruction is made of four distinct parts: `<LABEL>: <MNEMONIC> <OPERAND> <COMMENT>`.
+LLAMA-16 Assembly mimics the AT&T style of instruction syntax. An instruction is made of four distinct parts: `<LABEL>: <MNEMONIC> <OPERAND> <COMMENT>`.
 
 ##### Label Field
 The label field is an optional field for most instructions. It is a name used to reference the instruction's address. The label can consist of any number of ASCII characters except for a colon ( : ). A colon must follow the last character. By convention, a space should follow the colon character of the label before the mnemonic field.
