@@ -52,6 +52,7 @@ class Assembler(object):
 
     def write_binary_file(self, filename, binary_data):
         with open(filename, 'wb') as file:
+            #print(f'DEBUG OUTPUT: {binary_data}')
             file.write(binary_data)
         return len(binary_data)
 
@@ -62,7 +63,7 @@ class Assembler(object):
         
         with open(filename, 'w', encoding='utf-8') as file:
             for symbol in table:
-                print(f'{table[symbol]:04X} {symbole[:16].upper()}', file=file)
+                print(f'{table[symbol]:04X} {symbol[:16].upper()}', file=file)
 
         return symbol_count
 
@@ -71,6 +72,7 @@ class Assembler(object):
         try:
             for line_number, line in enumerate(lines):
                 self.parse(line)
+                self.process()
         except StopIteration:
             # reach end of file
             pass
@@ -79,6 +81,7 @@ class Assembler(object):
         try:
             for line_number, line in enumerate(lines):
                 self.parse(line)
+                self.process()
         except StopIteration:
             # reach end of file
             pass
@@ -248,6 +251,40 @@ class Assembler(object):
             self.directive_string()
         else:
             self.write_error(f'unrecognized mnemonic "{self.mnemonic}"')
+
+
+    def mv(self):
+        self.verify_ops(self.op1 != '' and self.op2 != '')
+        # 0x00 = 0
+        opcode = 0 + (self.register_offset(self.op2) << 3)
+        self.pass_action(2, opcode.to_bytes(1, byteorder='little'))
+        #self.immediate_operand()
+
+    def inc(self):
+        self.verify_ops(self.op1 != '' and self.op2 == '')
+        # 0x06 = 6
+        opcode = 6 + (self.register_offset(self.op1) << 3)
+        self.pass_action(2, opcode.to_bytes(1, byteorder='little'))
+
+    def dec(self):
+        self.verify_ops(self.op1 != '' and self.op2 == '')
+        # 0x07 = 7
+        opcode = 7 + (self.register_offset(self.op1) << 3)
+        self.pass_action(2, opcode.to_bytes(1, byteorder='little'))
+
+    def cmp(self):
+        self.verify_ops(self.op1 != '' and self.op2 != '')
+        # 0x0B = 11
+        opcode = 11 + self.register_offset(self.op2)
+        self.pass_action(1, opcode.to_bytes(1, byteorder='little'))
+
+    def jnz(self):
+        self.verify_ops(self.op1 != '' and self.op2 == '')
+        self.pass_action(3, b'\x0d')
+
+    def hlt(self):
+        self.verify_ops(self.op1 == self.op2 == '')
+        self.pass_action(1, b'\x0F')
 
     def immediate_operand(self, operand_type=8):
         if self.mnemonic == 'mv':
