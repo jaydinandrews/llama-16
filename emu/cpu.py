@@ -105,17 +105,21 @@ class LLAMACpu(object):
     def _get_ip(self):
         return self.registers[RIP_REG]
 
-    def _update_flags(self, register):
+    def _update_flags(self, register, set_negative=False):
         # 0000 000H 0GEL 0NZP
         flags = self.registers[RFLAG_REG]
         self.registers[RFLAG_REG] = (flags & 0xFFF0)
+        # Since LLAMA-16 used unsigned integers, we must explicity set the negative flag
+        # when an operation results in a negative result.
+        if set_negative:
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x4
+            return
+
         value = self._reg_read(register)
         if value > 0:
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x1
         elif value == 0:
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x2
-        elif value < 0:
-            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x4
 
     def _decode_instruction(self, instruction):
         opcode = (instruction & 0xF000) >> 12
@@ -240,6 +244,8 @@ class LLAMACpu(object):
         elif src_type == 'reg':
             register = self._get_register((instruction & 0x00F0) >> 4)
             src = self._reg_read(register)
+            if (self.registers[RFLAG_REG] & 0x0004):
+                src = 0 - src
 
         if dst_type == 'mem_adr':
             address = self._get_next_word()
@@ -249,9 +255,46 @@ class LLAMACpu(object):
         elif dst_type == 'reg':
             register = self._get_register((instruction & 0x000F))
             dst = self._reg_read(register)
+            if (self.registers[RFLAG_REG] & 0x0004):
+                dst = 0 - dst
             dst = dst + src
-            self._reg_write(register, dst)
-            self._update_flags(register)
+            if dst < 0:
+                dst = (~dst + 1)
+                self._reg_write(register, dst)
+                self._update_flags(register, True)
+            else:
+                self._reg_write(register, dst)
+                self._update_flags(register)
+
+    def _sub(self, instruction):
+        src_type, dst_type = self._get_op_types(instruction)
+        if src_type == 'imm':
+            src = self._get_next_word()
+        elif src_type == 'mem_adr':
+            address = self._get_next_word()
+            src = self._mem_read(address)
+        elif src_type == 'reg':
+            register = self._get_register((instruction & 0x00F0) >> 4)
+            src = self._reg_read(register)
+            if (self.registers[RFLAG_REG] & 0x0004):
+                src = 0 - src
+
+        if dst_type == 'mem_adr':
+            address = self._get_next_word()
+            dst = self._mem_read(address)
+            dst = dst - src
+            self._mem_write(address, dst)
+        elif dst_type == 'reg':
+            register = self._get_register((instruction & 0x000F))
+            dst = self._reg_read(register)
+            dst = dst - src
+            if dst < 0:
+                dst = (~dst + 1)
+                self._reg_write(register, dst)
+                self._update_flags(register, True)
+            else:
+                self._reg_write(register, dst)
+                self._update_flags(register)
 
     def _inc(self, instruction):
         src_type, dst_type = self._get_op_types(instruction)
