@@ -42,7 +42,7 @@ class Assembler(object):
         if args.outfile:
             outfile = Path(args.outfile)
             if args.symtab:
-                symfile = Path(str(Path(args.outfile))+".SYM")
+                symfile = str(Path(args.outfile))+".SYM"
         else: # no outfile
             outfile = Path(args.filename).stem + ".OUT"
             if args.symtab:
