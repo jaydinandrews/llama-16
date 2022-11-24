@@ -9,15 +9,20 @@ class Assembler(object):
             self._lines.append(line.strip())
 
     def assemble(self):
-        for line in self._lines:
-            line = self.remove_comments(line)  # Clean input file
-            print(line)
+        self.pass_one()
 
-    # noinspection PyMethodMayBeStatic
-    def remove_comments(self, line):
-        comment_sub = line.split(';')
-        line = comment_sub[0]
-        return line
+    def pass_one(self):
+        for line in self._lines:
+            # TODO: Replace ' ' strings with ASCII
+
+            # Remove comments
+            comment_sub = line.split(';')
+            line = comment_sub[0]
+
+            # Replace commas
+            line = line.replace(',', ' ')
+
+            print(line)
 
 
 if __name__ == "__main__":
