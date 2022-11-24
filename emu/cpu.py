@@ -32,7 +32,7 @@ class LLAMACpu(object):
         self._increment_rip()
         instruction = self._mem_read(ip)
         self._decode_instruction(instruction)
-        if self.registers[RFLAG_REG] & 0x0F00:
+        if self.registers[RFLAG_REG] & 0x0100:
             raise CpuHalted
 
     def dump_state(self):
@@ -206,7 +206,6 @@ class LLAMACpu(object):
         elif dst_type == 'reg':
             register = self._get_register((instruction & 0x000F))
             self._reg_write(register, src)
-            self._update_flags(register)
 
     def _push(self, instruction):
         src_type, dst_type = self._get_op_types(instruction)
@@ -244,8 +243,6 @@ class LLAMACpu(object):
         elif src_type == 'reg':
             register = self._get_register((instruction & 0x00F0) >> 4)
             src = self._reg_read(register)
-            if (self.registers[RFLAG_REG] & 0x0004):
-                src = 0 - src
 
         if dst_type == 'mem_adr':
             address = self._get_next_word()
@@ -255,16 +252,9 @@ class LLAMACpu(object):
         elif dst_type == 'reg':
             register = self._get_register((instruction & 0x000F))
             dst = self._reg_read(register)
-            if (self.registers[RFLAG_REG] & 0x0004):
-                dst = 0 - dst
             dst = dst + src
-            if dst < 0:
-                dst = (~dst + 1)
-                self._reg_write(register, dst)
-                self._update_flags(register, True)
-            else:
-                self._reg_write(register, dst)
-                self._update_flags(register)
+            self._reg_write(register, dst)
+            self._update_flags(register)
 
     def _sub(self, instruction):
         src_type, dst_type = self._get_op_types(instruction)
@@ -276,8 +266,6 @@ class LLAMACpu(object):
         elif src_type == 'reg':
             register = self._get_register((instruction & 0x00F0) >> 4)
             src = self._reg_read(register)
-            if (self.registers[RFLAG_REG] & 0x0004):
-                src = 0 - src
 
         if dst_type == 'mem_adr':
             address = self._get_next_word()
@@ -288,13 +276,8 @@ class LLAMACpu(object):
             register = self._get_register((instruction & 0x000F))
             dst = self._reg_read(register)
             dst = dst - src
-            if dst < 0:
-                dst = (~dst + 1)
-                self._reg_write(register, dst)
-                self._update_flags(register, True)
-            else:
-                self._reg_write(register, dst)
-                self._update_flags(register)
+            self._reg_write(register, dst)
+            self._update_flags(register)
 
     def _inc(self, instruction):
         src_type, dst_type = self._get_op_types(instruction)
@@ -320,6 +303,29 @@ class LLAMACpu(object):
             self._reg_write(register, value - 1)
             self._update_flags(register)
 
+    def _and(self, instruction):
+        src_type, dst_type = self._get_op_types(instruction)
+        if src_type == 'imm':
+            src = self._get_next_word()
+        elif src_type == 'mem_adr':
+            address = self._get_next_word()
+            src = self._mem_read(address)
+        elif src_type == 'reg':
+            register = self._get_register((instruction & 0x00F0) >> 4)
+            src = self._reg_read(register)
+
+        if dst_type == 'mem_adr':
+            address = self._get_next_word()
+            dst = self._mem_read(address)
+            dst = dst - src
+            self._mem_write(address, dst)
+        elif dst_type == 'reg':
+            register = self._get_register((instruction & 0x000F))
+            dst = self._reg_read(register)
+            dst = dst - src
+            self._reg_write(register, dst)
+            self._update_flags(register)
+
     def _cmp(self, instruction):
         # 0000 000H 0GEL 0NZP
         src_type, dst_type = self._get_op_types(instruction)
@@ -337,13 +343,13 @@ class LLAMACpu(object):
             dst = self._reg_read(register)
 
         flags = self.registers[RFLAG_REG]
-        self.registers[RFLAG_REG] = (flags & 0xFF0F)
+        self.registers[RFLAG_REG] = (flags & 0xFFF0)
         if src < dst:
-            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x10
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x4
         elif src == dst:
-            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x20
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x2
         elif src > dst:
-            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x40
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x1
 
     def _jnz(self, instruction):
         flags = self.registers[RFLAG_REG]
