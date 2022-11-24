@@ -22,7 +22,7 @@ class Assembler(object):
         parser.add_argument(
             "-o",
             "--outfile",
-            help="output file, program.OUT is default if -o not specified",
+            help="output file, {programName}.OUT is default if -o not specified",
         )
         # one for saving symbol table?
         parser.add_argument("-s",
@@ -195,8 +195,8 @@ class Assembler(object):
                 self.label = self.label.lower()
 
         self.mnemonic = self.mnemonic.lower()
-        print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
-              f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
+        #print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
+        #      f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
         return (
             self.label,
             self.mnemonic,
