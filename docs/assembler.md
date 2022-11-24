@@ -28,5 +28,5 @@ The debug flag is used to get a sneak peek into the process of the assembler. If
 
 Finally, at the end of assembling, the bytes written to the file are printed to standard output. Any ASCII values are printed as characters, otherwise the hex representation of the data is printed.
 
-#### filename
+#### `filename`
 The filename is the only required field. This should be a path to the source file to be assembled. If the path is incomplete or the file cannot be found, the assembler will still attempted to parse the file but fail with an "Unrecognized Mnemonic" error.

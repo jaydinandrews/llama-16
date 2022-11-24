@@ -66,8 +66,8 @@ F: HLT                                   -> f_halt = true
 #### Requirements
 LLAMA-16 is written in standard library Python version >=3.6. No additional modules or packages are required.
 ## The Tool Suite
-#### Assembler ([asm](./docs/asm.md))
+#### Assembler ([asm](./docs/assembler.md))
 `./asm/core.py [-h] [-o OUTFILE] [-s] [-d] filename`
 
-#### Emulator ([emu](./docs/emu.md))
+#### Emulator ([emu](./docs/emulator.md))
 `./emu/core.py [-h] [-d] program`
