@@ -34,6 +34,8 @@ To work around this here are some tips:
 * When trying to print one character, load it into memory with a zero null character terminator first (remember characters are stored little endian).
 * When trying to print a string of characters, make sure that there is a zero null character at the end to mark the termination of the string.
 
+## Forgetting a `hlt` instruction
+If there is not `hlt` instruction in a program, then the emulator will continue to grab the next word in memory and attempt to execute it. Since `0000` maps to the instruction `mv a, 0`, the emulator will continuously attempt to move zero into register a over and over again in an infinite loop.
 
 ### Found something *not* referenced in this document?
 Think you stumbled across a bug or unintended behavior of the project? Congrats and welcome to the club! Now get in line... 
