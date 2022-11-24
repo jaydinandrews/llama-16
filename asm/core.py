@@ -312,6 +312,19 @@ class Assembler(object):
         opcode = 2
         opcode = self.encode_operand_types(opcode, 1)
 
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.immediate_operand()
+        self.memory_address()
+
+    def pop(self):
+        self.verify_ops(self.op1 != "" and self.op2 == "")
+        #0x03 = 3
+        opcode = 3
+        opcode = self.encode_operand_types(opcode, 1)
+
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.memory_address()
+
     def add(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
         #0x04 = 4
