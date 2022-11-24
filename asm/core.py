@@ -428,14 +428,15 @@ class Assembler(object):
             self.write_error(f"Error reading \"{self.op1}\", not an integer")
 
     def directive_string(self):
-        # Should the strings be null terminated? Should the encoded data also include
-        # a size?
         if self.label == "":
             self.write_error(".data and .string directives must be labeled")
         self.verify_ops(self.op1 != "" and self.op2 == "")
 
-        str_len = len(self.op1) - 2
-        self.pass_action(str_len, bytes(self.op1[1:-1], encoding='utf-8'))
+        string = self.op1
+        string = string.strip('\"').strip('\'')
+        string += '\0'
+        data = bytes(string, encoding='utf-8')
+        self.pass_action(len(data), data)
 
     def encode_operand_types(self, opcode, num_ops):
         opcode = opcode << 12
@@ -465,13 +466,14 @@ class Assembler(object):
             self.write_error(f'Invalid operand "{self.op2}"')
         return opcode
 
-    def immediate_operand(self, operand_type=16):
+    def immediate_operand(self):
         # This function also handles LABEL operands. Should this be its own function
         # for ease of readablity and debugging?
         if(self.op1_type != "imm" and self.op1_type != "label"):
             return
 
         operand = self.op1
+        self.address += 2
 
         # Numerical
         if operand[0].isdigit():
@@ -484,12 +486,12 @@ class Assembler(object):
             number = self.symbol_table[operand]
 
         if self.pass_number == 2:
-            operand_size = 1 if operand_type == 8 else 2
-            self.output += number.to_bytes(operand_size, byteorder="little")
+            self.pass_action(2, number.to_bytes(2, byteorder="little"))
 
     def memory_address(self):
         if self.op1_type == "mem_adr":
             operand = self.op1
+            self.address += 2
 
             if operand[0].isdigit():
                 number = int(operand, 16)
@@ -499,10 +501,11 @@ class Assembler(object):
                     self.write_error(f"Undefined label \"{operand}\"")
 
             if self.pass_number == 2:
-                self.output += number.to_bytes(2, byteorder="little")
+                self.pass_action(2, number.to_bytes(2, byteorder="little"))
 
         if self.op2_type == "mem_adr":
             operand = self.op2
+            self.address += 2
 
             if operand[0].isdigit():
                 number = int(operand, 16)
@@ -512,7 +515,7 @@ class Assembler(object):
                     self.write_error(f"Undefined label \"{operand}\"")
 
             if self.pass_number == 2:
-                self.output += number.to_bytes(2, byteorder="little")
+                self.pass_action(2, number.to_bytes(2, byteorder="little"))
 
     def register_offset(self, reg_in):
         reg = reg_in.lower()
@@ -537,17 +540,16 @@ class Assembler(object):
             print(f"DEBUG: Current address: {self.address}\nDEBUG: Current symbol table: {self.symbol_table}")
         sys.exit(1)
 
-    def pass_action(self, size, output_byte, add_label=True):
+    def pass_action(self, size, output_byte):
         """On pass 1: build symbol table. On pass 2: generate code.
 
         Args:
             size: Number of bytes in the instruction
             output_byte: Opcode, empty binary is no output generated
-            add_label: True if label should be added
         """
 
         if self.pass_number == 1:
-            if self.label and add_label:
+            if self.label:
                 self.add_label()
             self.address += size
         else:
