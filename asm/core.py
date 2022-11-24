@@ -304,12 +304,17 @@ class Assembler(object):
         self.immediate_operand()
         self.memory_address()
 
+    def push(self):
+        self.verify_ops(self.op1 != "" and self.op2 == "")
+        #0x02 = 2
+        opcode = 2
+        opcode = self.encode_operand_types(opcode, 1)
+
     def add(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
         #0x04 = 4
         opcode = 4
         opcode = self.encode_operand_types(opcode, 2)
-
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
         self.immediate_operand()
         self.memory_address()
@@ -345,7 +350,7 @@ class Assembler(object):
 
     def hlt(self):
         self.verify_ops(self.op1 == self.op2 == "")
-        self.pass_action(1, b"\x00\xF0")
+        self.pass_action(2, b"\x00\xF0")
 
     def directive_data(self):
         if self.label == "":
@@ -357,6 +362,13 @@ class Assembler(object):
             self.pass_action(2, data.to_bytes(2, byteorder="little"))
         except ValueError:
             self.write_error(f"Error reading \"{self.op1}\", not an integer")
+
+    def calculate_size(self):
+        size = 0
+        sizes = {"label": 2, "mem_adr": 2, "reg": 0, "imm": 2}
+        size += sizes[self.op1_type] if self.op1 != "" else 0
+        size += sizes[self.op2_type] if self.op2 != "" else 0
+        return size + 2
 
     def encode_operand_types(self, opcode, num_ops):
         opcode = opcode << 12
