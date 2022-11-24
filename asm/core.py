@@ -284,9 +284,10 @@ class Assembler(object):
         elif self.mnemonic == ".data":
             self.directive_data()
         elif self.mnemonic == ".string":
-            self.directive_string()
+            pass #TODO
+            #self.directive_string()
         else:
-            self.write_error(f'unrecognized mnemonic "{self.mnemonic}"')
+            self.write_error(f'Unrecognized mnemonic "{self.mnemonic}"')
 
     def mv(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
@@ -330,30 +331,43 @@ class Assembler(object):
         self.verify_ops(self.op1 == self.op2 == "")
         self.pass_action(1, b"\x00\xF0")
 
+    def directive_data(self):
+        if self.label == "":
+            self.write_error(".data and .string directives must be labeled")
+        self.verify_ops(self.op1 != "" and self.op2 == "")
+
+        try:
+            data = int(self.op1)
+            self.pass_action(2, data.to_bytes(2, byteorder="little"))
+        except ValueError:
+            self.write_error(f"Error reading \"{self.op1}\", not an integer")
+
     def encode_operand_types(self, opcode, num_ops):
         opcode = opcode << 12
         if self.op1_type == "imm":
             opcode += (14 << 4)
         elif self.op1_type == "reg":
             opcode += (self.register_offset(self.op1) << 4)
-        elif self.op2_type == "mem":
+        elif self.op1_type == "mem" or self.op1_type == "label":
+            if self.debug_mode: print(f"DEBUG: Symbol table: {self.symbol_table}")
             opcode += (15 << 4)
         elif self.op2_type == "":
             pass
         else:
-            self.write_error(f'invalid operand "{self.op1}"')
+            self.write_error(f'Invalid operand "{self.op1}"')
 
         if num_ops == 1:
             return opcode
 
         if self.op2_type == "reg":
             opcode += (self.register_offset(self.op2))
-        elif self.op2_type == "mem":
+        elif self.op2_type == "mem" or self.op2_type == "label":
+            if self.debug_mode: print(f"DEBUG: Symbol table: {self.symbol_table}")
             opcode += 15
         elif self.op2_type == "":
             pass
         else:
-            self.write_error(f'invalid operand "{self.op2}"')
+            self.write_error(f'Invalid operand "{self.op2}"')
         return opcode
 
     def immediate_operand(self, operand_type=16):
@@ -366,7 +380,7 @@ class Assembler(object):
         elif self.pass_number == 2:
             operand = operand.lower()
             if operand not in self.symbol_table:
-                self.write_error(f'undefined label "{operand}"')
+                self.write_error(f'Undefined label "{operand}"')
             number = self.symbol_table[operand]
 
         if self.pass_number == 2:
@@ -392,6 +406,8 @@ class Assembler(object):
 
     def write_error(self, message):
         print(f"Assembly error on line {self.line_number + 1}: {message}")
+        if self.debug_mode:
+            print(f"DEBUG: Current address: {self.address}\nDEBUG: Current symbol table: {self.symbol_table}")
         sys.exit(1)
 
     def pass_action(self, size, output_byte, add_label=True):
@@ -415,7 +431,7 @@ class Assembler(object):
         """Add label to symbol table."""
         symbol = self.label.lower()
         if symbol in self.symbol_table:
-            self.write_error(f'duplicate label: "{self.label}"')
+            self.write_error(f'Duplicate label: "{self.label}"')
         self.symbol_table[symbol] = self.address
 
 
