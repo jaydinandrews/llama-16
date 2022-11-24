@@ -249,6 +249,40 @@ class Assembler(object):
         else:
             self.write_error(f'unrecognized mnemonic "{self.mnemonic}"')
 
+    def immediate_operand(self, operand_type=8):
+        if self.mnemonic == 'mv':
+            operand = self.op1
+        else:
+            operand = self.op2
+
+        # Numerical
+        if operand[0].isdigit():
+            number = operand
+        # Label
+        elif self.pass_number == 2:
+            operand = operand.lower()
+            if operand not in self.symbol_table:
+                self.write_error(f'undefined label "{operand}"')
+            number = self.symbol_table[operand]
+
+        if self.pass_number == 2:
+            operand_size = 1 if operand_type == 8 else 2
+            self.output += number.to_bytes(operand_size, byteorder='little')
+
+
+    def register_offset(self, reg_in):
+        reg = reg_in.lower()
+        if reg == 'a':
+            return 0
+        elif reg == 'b':
+            return 1
+        elif reg == 'c':
+            return 2
+        elif reg == 'd':
+            return 3
+        else:
+            self.write_error(f'Invalid register "{reg}"')
+
     def verify_ops(self, valid):
         if not valid:
             self.write_error(f'Invalid operands for mnemonic "{self.mnemonic}"')
@@ -280,13 +314,6 @@ class Assembler(object):
         if symbol in self.symbol_table:
             self.write_error(f'duplicate label: "{self.label}"')
         self.symbol_table[symbol] = self.address
-
-    # x00
-    # mv [imm16/reg/mem], [reg/mem]
-    def mv(self):
-        self.verify_ops(self.op1 != '' and self.op2 != '')
-        src_type = self.check_src()
-        dst_type = self.check_dest()
 
     def check_src(self):
         if self.op1_type == 'imm':
