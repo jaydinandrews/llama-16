@@ -128,7 +128,7 @@ class Assembler(object):
             if directive == ".string":
                 self.op1_type = "string"
 
-            # print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
+            #print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
             #      f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
             return (
                 self.label,
@@ -201,8 +201,8 @@ class Assembler(object):
                 self.label = self.label.lower()
 
         self.mnemonic = self.mnemonic.lower()
-        # print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
-        #      f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
+        print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
+              f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
         return (
             self.label,
             self.mnemonic,
@@ -284,45 +284,76 @@ class Assembler(object):
     def mv(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
         # 0x00 = 0
-        opcode = 0 + (self.register_offset(self.op2) << 3)
-        self.pass_action(2, opcode.to_bytes(1, byteorder="little"))
-        # self.immediate_operand()
+        opcode = 0
+        opcode = self.encode_operand_types(opcode)
+        
+        print(f'DEBUG OPCODE IS: {opcode}')
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.immediate_operand()
 
     def inc(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
         # 0x06 = 6
-        opcode = 6 + (self.register_offset(self.op1) << 3)
-        self.pass_action(2, opcode.to_bytes(1, byteorder="little"))
+        opcode = 6
+        opcode = self.encode_operand_types(opcode)
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
 
     def dec(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
         # 0x07 = 7
         opcode = 7 + (self.register_offset(self.op1) << 3)
-        self.pass_action(2, opcode.to_bytes(1, byteorder="little"))
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
 
     def cmp(self):
         self.verify_ops(self.op1 != "" and self.op2 != "")
         # 0x0B = 11
         opcode = 11 + self.register_offset(self.op2)
-        self.pass_action(1, opcode.to_bytes(1, byteorder="little"))
+        self.pass_action(1, opcode.to_bytes(2, byteorder="little"))
 
     def jnz(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
-        self.pass_action(3, b"\x0d")
+        self.pass_action(3, b"\x00\x0d")
 
     def hlt(self):
         self.verify_ops(self.op1 == self.op2 == "")
-        self.pass_action(1, b"\x0F")
+        self.pass_action(1, b"\x00\x0F")
 
-    def immediate_operand(self, operand_type=8):
-        if self.mnemonic == "mv":
-            operand = self.op1
+    def encode_operand_types(self, opcode):
+        if self.op1_type == "imm":
+            opcode += (14 << 4)
+        elif self.op1_type == "reg":
+            opcode += (self.register_offset(self.op1) << 4)
+        elif self.op2_type == "mem":
+            opcode += (15 << 4)
+        elif self.op2_type == "":
+            pass
         else:
-            operand = self.op2
+            self.write_error(f'invalid operand "{self.op1}"')
+        
+        if self.op2_type == "imm":
+            opcode += 14
+        if self.op2_type == "reg":
+            opcode += (self.register_offset(self.op2))
+        elif self.op2_type == "mem":
+            opcode += 15
+        elif self.op2_type == "":
+            pass
+        else:
+            self.write_error(f'invalid operand "{self.op2}"')
+        return opcode
 
+    def immediate_operand(self, operand_type=16):
+        if (self.op1_type != "imm" or self.op2_type != "imm"):
+            return
+        if self.mnemonic != "cmp":
+            operand = self.op1
+        else: #TODO: check if second op is imm
+            pass
+
+        print(f'IMMEDIATE  HEREEEE')
         # Numerical
         if operand[0].isdigit():
-            number = operand
+            number = int(operand)
         # Label
         elif self.pass_number == 2:
             operand = operand.lower()
