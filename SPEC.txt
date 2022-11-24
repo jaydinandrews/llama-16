@@ -59,15 +59,16 @@ a,b,c,d Values in registers are denoted with alpha a-d where alpha is writable r
 :: Instruction Layout ::
 <operation> <extra> <source operand type> <destination operand type>
 
-immediates are encoded as 1: 0001
-registers are encoded as 2: 0010
-memory addresses are encoded as 4: 0100
+immediate references are encoded as 14->0xE->0b1110
+memory address references are encoded as 15->0xF->0b1111
+registers are encoded by there alpha order. i.e. a is 0, b is 2, etc
 
 llama:
   mv #3, a ;mv immediate number 3 into register a
 binary:
-  0000 0000 0001 0010 -> next 2 bytes are immediate value of 3
-  mv        imm  reg  
+  0000 0000 1110 0000 -> next 2 bytes are immediate value of 3
+  0    0    e    0
+  mv        imm  a  
 
 ::: Directives :::
 .data
