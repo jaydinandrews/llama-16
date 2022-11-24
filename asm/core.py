@@ -43,13 +43,13 @@ class Assembler(object):
             lines = file.readlines()
 
         if args.outfile:
-            outfile = Path(args.outfile)
+            outfile = Path(args.outfile).with_suffix(".OUT")
             if args.symtab:
-                symfile = str(Path(args.outfile))+".SYM"
+                symfile = Path(args.outfile).with_suffix(".SYM")
         else:  # no outfile
-            outfile = Path(args.filename).stem + ".OUT"
+            outfile = Path(args.filename).with_suffix(".OUT")
             if args.symtab:
-                symfile = Path(args.filename).stem + ".SYM"
+                symfile = Path(args.filename).with_suffix(".SYM")
 
         self.assemble(lines)
         bytes_written = self.write_binary_file(outfile, self.output)
