@@ -1,12 +1,12 @@
 ; imm reg
 add #2, a
 ; imm mem
-add #2, #3
+add #2, [5555]
 ; reg reg
 add a, b
 ; reg mem
 add a, [5555]
 ; mem reg
-add [555], a
+add [5555], a
 ; mem mem
 add [5555], [6666]
