@@ -1,0 +1,12 @@
+; imm reg
+or #2, a
+; imm mem
+or #2, #3
+; reg reg
+or a, b
+; reg mem
+or a, [5555]
+; mem reg
+or [5555], a
+; mem mem
+or [5555], [6666]

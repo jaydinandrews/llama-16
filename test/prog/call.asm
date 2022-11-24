@@ -1,0 +1,2 @@
+; LABEL
+LOOP: call LOOP

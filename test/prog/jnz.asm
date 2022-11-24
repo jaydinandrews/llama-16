@@ -1,0 +1,2 @@
+; LABEL
+LOOP: jnz LOOP
