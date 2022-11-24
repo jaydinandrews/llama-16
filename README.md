@@ -9,7 +9,7 @@ LLAMA-16 is a 16 bit micro-architecture designed with simplicity in mind. The pr
 ## Design Specifications ([spec](./SPEC.txt))
 #### Features
 * 8 16-bit registers (4 normal, 3 address, 1 flags)
-* 16-bit address bus (65536 16-bit words = a massive 64 KiB of memory)
+* 16-bit address bus (65536 16-bit words = a massive 128 KiB of memory)
 * 16 instruction RISC architecture
 * "Memory mapped" I/O for user interaction*
 
