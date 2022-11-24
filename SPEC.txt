@@ -10,10 +10,21 @@ LLAMA-16 - LLA Micro Architecture
 
 ::: Memory Layout :::
 
-x0000 - x3FFF General Purpose ROM 16 KiB
-x4000 - xFDFF General Purpose RAM 47 KB
-xFA00 - xFDEF Recommended Stack   64 KiB
-xFE00 - xFFFF Memory Mapped I/O   .5 KiB
+0x0000 - 0x3FFF General Purpose ROM  2048 B
+0x4000 - 0xFFDF General Purpose RAM  5112 B
+0xDFC0 - 0xFFBF Recommended^ Stack   1024 B
+0xFFC0 - 0xFFDF Reserved                4 B
+0xFFE0 - 0xFFFF Memory Mapped I/O       4 B
+
+^The entirety of the 6136 bytes from 0x4000 to 0xFFBF are allocated as
+ user space. This spec recommends building the stack downwards from
+ 0xFFBF. This midigates the chances of the stack overflowing into user
+ programs and heap memory.
+
+:: Memory Mapped I/O ::
+
+0xFFE0 - 0xFFEF Input  16 bits
+0xFFF0 - 0xFFFF Output 16 bits
 
 ::: Registers :::
 
