@@ -201,7 +201,7 @@ class Assembler(object):
             elif self.op2.startswith("#"):
                 self.op2_type = "imm"
                 self.op2 = self.op2.translate({35: None})  # Remove number sign
-            elif self.op2 in ["a", "A", "b", "B", "c", "C", "d", "D"]:
+            elif self.op2 in ["a", "A", "b", "B", "c", "C", "d", "D", "ip", "IP", "sp", "SP", "bp", "BP"]:
                 self.op2_type = "reg"
                 self.op2.lower()
             else:
@@ -549,6 +549,12 @@ class Assembler(object):
             return 2
         elif reg == "d":
             return 3
+        elif reg == "ip":
+            return 4
+        elif reg == 'sp':
+            return 5
+        elif reg == 'bp':
+            return 6
         else:
             self.write_error(f'Invalid register "{reg}"')
 

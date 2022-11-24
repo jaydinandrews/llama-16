@@ -92,16 +92,28 @@ class LLAMACpu(object):
             return self.registers[2]
         elif register == 'd':
             return self.registers[3]
+        elif register == 'ip':
+            return self.registers[RIP_REG]
+        elif register == 'sp':
+            return self.registers[RSP_REG]
+        elif register == 'bp':
+            return self.registers[RBP_REG]
 
     def _reg_write(self, register, value):
         if register == 'a':
-            self.registers[0] = ushort(value)
+            self.registers[0] = value
         elif register == 'b':
-            self.registers[1] = ushort(value)
+            self.registers[1] = value
         elif register == 'c':
-            self.registers[2] = ushort(value)
+            self.registers[2] = value
         elif register == 'd':
-            self.registers[3] = ushort(value)
+            self.registers[3] = value
+        elif register == 'ip':
+            self.registers[RIP_REG] = value
+        elif register == 'sp':
+            self.registers[RSP_REG] = value
+        elif register == 'bp':
+            self.registers[RBP_REG] = value
 
     def _get_ip(self):
         return self.registers[RIP_REG]
@@ -161,14 +173,14 @@ class LLAMACpu(object):
     def _get_op_types(self, instruction):
         src_encode = (instruction & 0x00F0) >> 4
         dst_encode = instruction & 0x000F
-        if src_encode < 0x4:
+        if src_encode < 0x7:
             src_type = 'reg'
         elif src_encode == 0xE:
             src_type = 'imm'
         elif src_encode == 0xF:
             src_type = 'mem_adr'
 
-        if dst_encode < 0x4:
+        if dst_encode < 0x7:
             dst_type = 'reg'
         elif dst_encode == 0xF:
             dst_type = 'mem_adr'
@@ -184,6 +196,12 @@ class LLAMACpu(object):
             return 'c'
         elif encode == 3:
             return 'd'
+        elif encode == 4:
+            return 'ip'
+        elif encode == 5:
+            return 'sp'
+        elif encode == 6:
+            return 'bp'
 
     def _get_next_word(self):
         word = self._mem_read(self.registers[RIP_REG])
