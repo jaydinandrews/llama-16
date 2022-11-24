@@ -88,17 +88,22 @@ class Assembler(object):
         self.pass_number = 1
         try:
             for line_number, line in enumerate(lines):
+                print(f"Line number is {self.line_number}")
                 self.parse(line)
                 self.process()
+                self.line_number += 1
         except StopIteration:
             # reach end of file
             pass
 
         self.pass_number = 2
+        self.line_number = 0
         try:
             for line_number, line in enumerate(lines):
+                print(f"Line number is {self.line_number}")
                 self.parse(line)
                 self.process()
+                self.line_number += 1
         except StopIteration:
             # reach end of file
             pass
@@ -297,6 +302,17 @@ class Assembler(object):
         
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
         self.immediate_operand()
+        self.memory_address()
+
+    def add(self):
+        self.verify_ops(self.op1 != "" and self.op2 != "")
+        #0x04 = 4
+        opcode = 4
+        opcode = self.encode_operand_types(opcode, 2)
+
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.immediate_operand()
+        self.memory_address()
 
     def inc(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
@@ -348,7 +364,7 @@ class Assembler(object):
             opcode += (14 << 4)
         elif self.op1_type == "reg":
             opcode += (self.register_offset(self.op1) << 4)
-        elif self.op1_type == "mem" or self.op1_type == "label":
+        elif self.op1_type == "mem_adr" or self.op1_type == "label":
             if self.debug_mode: print(f"DEBUG: Symbol table: {self.symbol_table}")
             opcode += (15 << 4)
         elif self.op2_type == "":
@@ -361,7 +377,7 @@ class Assembler(object):
 
         if self.op2_type == "reg":
             opcode += (self.register_offset(self.op2))
-        elif self.op2_type == "mem" or self.op2_type == "label":
+        elif self.op2_type == "mem_adr" or self.op2_type == "label":
             if self.debug_mode: print(f"DEBUG: Symbol table: {self.symbol_table}")
             opcode += 15
         elif self.op2_type == "":
@@ -371,6 +387,9 @@ class Assembler(object):
         return opcode
 
     def immediate_operand(self, operand_type=16):
+        if(self.op1_type != "imm" and self.op1_type != "label"):
+            return
+
         operand = self.op1
 
         # Numerical
@@ -386,6 +405,33 @@ class Assembler(object):
         if self.pass_number == 2:
             operand_size = 1 if operand_type == 8 else 2
             self.output += number.to_bytes(operand_size, byteorder="little")
+
+    def memory_address(self):
+        if self.op1_type == "mem_adr":
+            operand = self.op1
+
+            if operand[0].isdigit():
+                number = int(operand, 16)
+            else:
+                number = self.symbol_table.get(operand.lower(), -1)
+                if self.pass_number == 2 and number < 0:
+                    self.write_error(f"Undefined label \"{operand}\"")
+
+            if self.pass_number == 2:
+                self.output += number.to_bytes(2, byteorder="little")
+
+        if self.op2_type == "mem_adr":
+            operand = self.op2
+
+            if operand[0].isdigit():
+                number = int(operand, 16)
+            else:
+                number = self.symbol_table.get(operand.lower(), -1)
+                if self.pass_number == 2 and number < 0:
+                    self.write_error(f"Undefined label \"{operand}\"")
+
+            if self.pass_number == 2:
+                self.output += number.to_bytes(2, byteorder="little")
 
     def register_offset(self, reg_in):
         reg = reg_in.lower()
