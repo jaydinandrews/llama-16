@@ -291,8 +291,7 @@ class Assembler(object):
         elif self.mnemonic == ".data":
             self.directive_data()
         elif self.mnemonic == ".string":
-            pass #TODO
-            #self.directive_string()
+            self.directive_string()
         else:
             self.write_error(f'Unrecognized mnemonic "{self.mnemonic}"')
 
@@ -427,6 +426,16 @@ class Assembler(object):
             self.pass_action(2, data.to_bytes(2, byteorder="little"))
         except ValueError:
             self.write_error(f"Error reading \"{self.op1}\", not an integer")
+
+    def directive_string(self):
+        # Should the strings be null terminated? Should the encoded data also include
+        # a size?
+        if self.label == "":
+            self.write_error(".data and .string directives must be labeled")
+        self.verify_ops(self.op1 != "" and self.op2 == "")
+
+        str_len = len(self.op1) - 2
+        self.pass_action(str_len, bytes(self.op1[1:-1], encoding='utf-8'))
 
     def encode_operand_types(self, opcode, num_ops):
         opcode = opcode << 12
