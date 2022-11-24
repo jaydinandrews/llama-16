@@ -56,6 +56,19 @@ F: HLT
 #imm16 Pound sign is used to denote an immediate value
 a,b,c,d Values in registers are denoted with alpha a-d where alpha is writable register
 
+:: Instruction Layout ::
+<operation> <extra> <source operand type> <destination operand type>
+
+immediates are encoded as 1: 0001
+registers are encoded as 2: 0010
+memory addresses are encoded as 4: 0100
+
+llama:
+  mv #3, a ;mv immediate number 3 into register a
+binary:
+  0000 0000 0001 0010 -> next 2 bytes are immediate value of 3
+  mv        imm  reg  
+
 ::: Directives :::
 .data
   Used to define numbers. Legal numbers are positive and negative integers.
