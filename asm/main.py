@@ -8,8 +8,7 @@ class Assembler(object):
     output = b''
 
     # the tokens per line
-    label, mnemonic, op1, op2, comment = '', '', '', '', ''
-
+    label, mnemonic, op1, op1_type, op2, op2_type, comment = '', '', '', '', '', '', ''
     symbol_table = {}
 
     def __init__(self):
@@ -36,11 +35,19 @@ class Assembler(object):
             # reach end of file
             pass
 
+        self.pass_number = 2
+        try:
+            for line_number, line in enumerate(lines):
+                self.parse(line)
+        except StopIteration:
+            # reach end of file
+            pass
+
     def parse(self, line):
         """Parse and tokenize line of source code."""
         # Based on this algorithm from Brian Robert Callahan:
         # https://briancallahan.net/blog/20210410.html
-        self.label, self.mnemonic, self.op1, self.op2, self.comment = '', '', '', '', ''
+        self.label, self.mnemonic, self.op1, self.op1_type, self.op2, self.op2_type, self.comment = '', '', '', '', '', '', ''
 
         preprocess = line.lstrip()  # remove leading whitespace
         preprocess = preprocess.translate({9: 32})  # replace tabs with spaces
@@ -88,11 +95,39 @@ class Assembler(object):
             self.mnemonic = self.op1.strip()
             self.op1 = ''
 
-        self.label = self.label.lower()
+        if self.op1:
+            if self.op1.startswith('['):
+                self.op1_type = 'mem_adr'
+                self.op1 = self.op1.translate({91: None, 93: None})  # Remove brackets
+            elif self.op1.startswith('#'):
+                self.op1_type = 'imm'
+                self.op1 = self.op1.translate({35: None})  # Remove number sign
+            elif self.op1 in ['a', 'A', 'b', 'B', 'c', 'C', 'd', 'D']:
+                self.op1_type = 'reg'
+                self.op1.lower()
+            else:
+                self.op1_type = 'label'
+                self.label = self.label.lower()
+
+        if self.op2:
+            if self.op2.startswith('['):
+                self.op2_type = 'mem_adr'
+                self.op2 = self.op2.translate({91: None, 93: None})  # Remove brackets
+            elif self.op2.startswith('#'):
+                self.op2_type = 'imm'
+                self.op2 = self.op2.translate({35: None})  # Remove number sign
+            elif self.op2 in ['a', 'A', 'b', 'B', 'c', 'C', 'd', 'D']:
+                self.op2_type = 'reg'
+                self.op2.lower()
+            else:
+                self.op2_type = 'label'
+                self.label = self.label.lower()
+
         self.mnemonic = self.mnemonic.lower()
-        # DEBUG: print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\n'
-        #      f'Op1: {self.op1}\nOp2: {self.op2}\nComment: {self.comment}\n')
-        return self.label, self.mnemonic, self.op1, self.op2, self.comment
+        print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
+              f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
+        return self.label, self.mnemonic, self.op1, self.op1_type, self.op2, self.op2_type, self.comment
+
 
     def process(self):
         if self.mnemonic == self.op1 == self.op2 == '':
@@ -100,39 +135,43 @@ class Assembler(object):
             return
 
         if self.mnemonic == 'mv':
-            pass
+            self.mv()
         elif self.mnemonic == 'lea':
-            pass
+            self.lea()
         elif self.mnemonic == 'push':
-            pass
+            self.push()
         elif self.mnemonic == 'pop':
-            pass
+            self.pop()
         elif self.mnemonic == 'add':
-            pass
+            self.add()
         elif self.mnemonic == 'sub':
-            pass
+            self.sub()
         elif self.mnemonic == 'inc':
-            pass
+            self.inc()
         elif self.mnemonic == 'dec':
-            pass
+            self.dec()
         elif self.mnemonic == 'and':
-            pass
+            self.mnemonic_and()
         elif self.mnemonic == 'or':
-            pass
+            self.mnemonic_or()
         elif self.mnemonic == 'not':
-            pass
+            self.mnemonic_not()
         elif self.mnemonic == 'cmp':
-            pass
+            self.cmp()
         elif self.mnemonic == 'call':
-            pass
+            self.call()
         elif self.mnemonic == 'jnz':
-            pass
+            self.jnz()
         elif self.mnemonic == 'ret':
-            pass
+            self.ret()
         elif self.mnemonic == 'hlt':
-            pass
+            self.hlt()
         else:
             self.write_error(f'unrecognized mnemonic "{self.mnemonic}"')
+
+    def verify_ops(self, valid):
+        if not valid:
+            self.write_error(f'Invalid operands for mnemonic "{self.mnemonic}"')
 
     def write_error(self, message):
         print(f'Assembly error on line {self.line_number + 1}: {message}')
