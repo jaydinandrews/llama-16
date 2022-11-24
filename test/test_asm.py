@@ -8,7 +8,7 @@ class AssemblerTestSuite(unittest.TestCase):
     """Assembler test cases."""
 
     def test_parse_args(self):
-        testargs = ["core", "-o", "test/bin/fff.OUT", "./prog/basicAdd.asm"]
+        testargs = ["core", "-o", "test/bin/add.OUT", "./test/prog/add.asm"]
 
         with unittest.mock.patch('sys.argv', testargs):
             assembler = asm.Assembler()
