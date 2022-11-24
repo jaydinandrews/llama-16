@@ -298,6 +298,15 @@ class Assembler(object):
         self.immediate_operand()
         self.memory_address()
 
+    def lea(self):
+        self.verify_ops(self.op1 != "" and self.op2 != "")
+        #0x01 = 1
+        opcode = 1
+        opcode = self.encode_operand_types(opcode, 2)
+
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.immediate_operand()
+
     def push(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
         #0x02 = 2
