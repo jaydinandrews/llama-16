@@ -50,7 +50,7 @@ LLAMA-16 - LLA Micro Architecture
 ::: Instructions :::
 <operation> <source operand> <destination operand>
 0: MV   [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [imm16/reg/mem]
-1: LEA  [LABEL], [reg]                   -> [reg] = [mem of LABEL]
+1: LEA^ [LABEL], [reg]                   -> [reg] = [mem of LABEL]
 2: PUSH [imm16/reg/mem]                  -> [SP++] = [imm16/reg/mem]
 3: POP  [reg/mem]                        -> reg = [SP--]
 4: ADD^ [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [rem/mem] + [imm16/reg/mem]
