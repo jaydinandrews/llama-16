@@ -1,7 +1,7 @@
 ; imm reg
 cmp #2, a
 ; imm mem
-cmp #2, #3
+cmp #2, [5555]
 ; reg reg
 cmp a, b
 ; reg mem

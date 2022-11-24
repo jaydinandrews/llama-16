@@ -109,7 +109,7 @@ class LLAMACpu(object):
         # 0000 000H 0GEL 0NZP
         self.registers[RFLAG_REG] = self.registers[RFLAG_REG] & 0xFFF0
 
-        value = self._reg_read(register)
+        value = self._reg_read(self._get_register(register))
         if value == 0:
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x2
         elif value > 0x7FFF:
@@ -119,7 +119,7 @@ class LLAMACpu(object):
         
         if compare_flags != 0x0:
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] & 0xFF0F
-            self.register[RFLAG_REG] = self.registers[RFLAG_REG] + compare_flags
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + compare_flags
 
     def _decode_instruction(self, instruction):
         opcode = (instruction & 0xF000) >> 12
@@ -311,6 +311,9 @@ class LLAMACpu(object):
         elif src_type == 'mem_adr':
             address = self._get_next_word()
             src = self._mem_read(address)
+        elif src_type == 'reg':
+            register = self._get_register((instruction & 0x00F0) >> 4)
+            src = self._reg_read(register)
 
         if dst_type == 'mem_adr':
             address = self._get_next_word()
