@@ -23,7 +23,7 @@ There are four types of information that may be required as operands: a register
 * A label is a name used as a reference to an instructions address in the program. If a label is used as an operand, it must be defined exactly once somewhere else in the program.
 * A 16-bit memory address has to be referenced by a 4 character hexadecimal value (addresses between x0000 and xFFFF) and should be surrounded by brackets [ ].
 
-Each instruction has a specific set of valid operands it can use. All instructions and their variants are specified further in this document.
+Each instruction has a specific set of valid operands it can use. All instructions and their variants are specified further in this document. Each instruction variant can also be found in its specified source file in the [test/asm](../test/asm) directory of the project.
 
 ##### Comment Field
 The comment field is used for the programer to document their programs or keep notes. They will be ignored by the assembler. The only rule governing this field is that it must begin with a semicolon ( ; ) and cannot consist of another semicolon.
