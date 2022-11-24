@@ -10,14 +10,14 @@ class Assembler(object):
 
     def assemble(self):
         for line in self._lines:
-            print(f'DEBUG: Line: {line}')
-            if not line.startswith(';'):
-                self.generate_symbol_table(line)
+            line = self.remove_comments(line)  # Clean input file
+            print(line)
 
     # noinspection PyMethodMayBeStatic
-    def generate_symbol_table(self, line):
-        tokens = re.split('; |, |\s', line)
-        print(tokens)
+    def remove_comments(self, line):
+        comment_sub = line.split(';')
+        line = comment_sub[0]
+        return line
 
 
 if __name__ == "__main__":
