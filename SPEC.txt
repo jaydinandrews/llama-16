@@ -38,7 +38,7 @@ xFE00 - xFFFF Memory Mapped I/O   .5 KiB
 0: MV   [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [imm16/reg/mem]
 1: LEA  [LABEL], [reg]                   -> [reg] = [mem of LABEL]
 2: PUSH [imm16/reg/mem]                  -> [SP--] = [imm16/reg/mem]
-3: POP  [reg]                            -> reg = [SP++]
+3: POP  [reg/mem]                        -> reg = [SP++]
 4: ADD  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [rem/mem] + [imm16/reg/mem]
 5: SUB  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] - [imm16/reg/mem]
 6: INC  [reg/mem]                        -> [reg/mem] = [reg/mem]++
@@ -47,8 +47,8 @@ xFE00 - xFFFF Memory Mapped I/O   .5 KiB
 9: OR   [imm16/reg/mem], [reg/mem]       -> [reg/mem] = [reg/mem] | [imm16/reg/mem]
 A: NOT  [imm16/reg/mem], [reg/mem]       -> [reg/mem] = ~([reg/mem] & [imm16/reg/mem])
 B: CMP* [imm16/reg/mem], [reg/mem]       -> f = compare reg, [imm16/reg/mem]
-C: CALL [reg/mem]                        -> [SP--] = IP; IP = [reg/mem]
-D: JNZ  [reg/mem]                        -> IP = [reg/mem] if f != zero
+C: CALL [LABEL]                          -> [SP--] = IP; IP = [mem of LABEL]
+D: JNZ  [LABEL]                          -> IP = [mem of LABEL/reg/mem] if f != zero
 E: RET                                   -> IP = [SP++]
 F: HLT
 

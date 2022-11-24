@@ -309,13 +309,15 @@ class Assembler(object):
         # 0x0B = 11
         opcode = 11
         opcode = self.encode_operand_types(opcode, 2)
-        print(f'opcode is {opcode}')
         self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
         self.immediate_operand()
 
     def jnz(self):
         self.verify_ops(self.op1 != "" and self.op2 == "")
-        self.pass_action(3, b"\x00\x0d")
+        opcode = 13
+        opcode = self.encode_operand_types(opcode, 1)
+        self.pass_action(2, opcode.to_bytes(2, byteorder="little"))
+        self.immediate_operand()
 
     def hlt(self):
         self.verify_ops(self.op1 == self.op2 == "")
@@ -337,8 +339,6 @@ class Assembler(object):
         if num_ops == 1:
             return opcode
 
-        if self.op2_type == "imm":
-            opcode += 14
         if self.op2_type == "reg":
             opcode += (self.register_offset(self.op2))
         elif self.op2_type == "mem":
@@ -413,24 +413,6 @@ class Assembler(object):
         if symbol in self.symbol_table:
             self.write_error(f'duplicate label: "{self.label}"')
         self.symbol_table[symbol] = self.address
-
-    def check_src(self):
-        if self.op1_type == "imm":
-            return 2048
-        elif self.op1_type == "reg":
-            return 1024
-        elif self.op1_type == "mem":
-            return 512
-        else:
-            self.write_error(f'unknown operand type: "{self.op1_type}"')
-
-    def check_dst(self):
-        if self.op1_type == "reg":
-            return 128
-        elif self.op1_type == "mem":
-            return 64
-        else:
-            self.write_error(f'unknown operand type: "{self.op1_type}"')
 
 
 if __name__ == "__main__":
