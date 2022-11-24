@@ -47,7 +47,8 @@ class Assembler(object):
         """Parse and tokenize line of source code."""
         # Based on this algorithm from Brian Robert Callahan:
         # https://briancallahan.net/blog/20210410.html
-        self.label, self.mnemonic, self.op1, self.op1_type, self.op2, self.op2_type, self.comment = '', '', '', '', '', '', ''
+        self.label, self.mnemonic, self.comment = '', '', ''
+        self.op1, self.op1_type, self.op2, self.op2_type = '', '', '', ''
 
         preprocess = line.lstrip()  # remove leading whitespace
         preprocess = preprocess.translate({9: 32})  # replace tabs with spaces
@@ -127,7 +128,6 @@ class Assembler(object):
         print(f'Label: {self.label}\nMnemonic: {self.mnemonic}\nOp1: {self.op1}\nOp1 Type: {self.op1_type}\n'
               f'Op2: {self.op2}\nOp2 Type: {self.op2_type}\nComment: {self.comment}\n')
         return self.label, self.mnemonic, self.op1, self.op1_type, self.op2, self.op2_type, self.comment
-
 
     def process(self):
         if self.mnemonic == self.op1 == self.op2 == '':
