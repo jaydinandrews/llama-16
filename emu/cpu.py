@@ -207,6 +207,12 @@ class LLAMACpu(object):
             register = self._get_register((instruction & 0x000F))
             self._reg_write(register, src)
 
+    def _lea(self, instruction):
+        address = self._get_next_word()
+        register = self._get_register((instruction & 0x000F))
+        self._reg_write(register, address)
+        self._update_flags(register)
+
     def _push(self, instruction):
         src_type, dst_type = self._get_op_types(instruction)
         if src_type == 'imm':
