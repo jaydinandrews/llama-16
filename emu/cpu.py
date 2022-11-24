@@ -105,21 +105,21 @@ class LLAMACpu(object):
     def _get_ip(self):
         return self.registers[RIP_REG]
 
-    def _update_flags(self, register, set_negative=False):
+    def _update_flags(self, register, compare_flags=0x0):
         # 0000 000H 0GEL 0NZP
-        flags = self.registers[RFLAG_REG]
-        self.registers[RFLAG_REG] = (flags & 0xFFF0)
-        # Since LLAMA-16 used unsigned integers, we must explicity set the negative flag
-        # when an operation results in a negative result.
-        if set_negative:
-            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x4
-            return
+        self.registers[RFLAG_REG] = self.registers[RFLAG_REG] & 0xFFF0
 
         value = self._reg_read(register)
-        if value > 0:
-            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x1
-        elif value == 0:
+        if value == 0:
             self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x2
+        elif value > 0x7FFF:
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x4
+        else:
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x1
+        
+        if compare_flags != 0x0:
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] & 0xFF0F
+            self.register[RFLAG_REG] = self.registers[RFLAG_REG] + compare_flags
 
     def _decode_instruction(self, instruction):
         opcode = (instruction & 0xF000) >> 12
@@ -319,14 +319,12 @@ class LLAMACpu(object):
             register = self._get_register((instruction & 0x000F))
             dst = self._reg_read(register)
 
-        flags = self.registers[RFLAG_REG]
-        self.registers[RFLAG_REG] = (flags & 0xFFF0)
         if src < dst:
-            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x4
+            self._update_flags(dst, 0x0010)
         elif src == dst:
-            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x2
+            self._update_flags(dst, 0x0020)
         elif src > dst:
-            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x1
+            self._update_flags(dst, 0x0040)
 
     def _call(self, instruction):
         sub_routine = self._get_next_word()
