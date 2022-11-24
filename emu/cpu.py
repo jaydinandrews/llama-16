@@ -27,6 +27,8 @@ class LLAMACpu(object):
         self._increment_rip()
         instruction = self._mem_read(ip)
         self._decode_instruction(instruction)
+        if self.registers[RFLAG_REG] & 0x0F00:
+            raise CpuHalted
         self.dump_state()
 
     def dump_state(self):
@@ -52,7 +54,7 @@ class LLAMACpu(object):
         elif(flags == 1):
             set_flags.append('positive')
 
-        cmp_flags = flags_code & 0x0070
+        cmp_flags = (flags_code & 0x0070) >> 4
         if(cmp_flags == 4):
             set_flags.append('greater')
         elif(cmp_flags == 2):
@@ -60,7 +62,7 @@ class LLAMACpu(object):
         elif(cmp_flags == 1):
             set_flags.append('less')
 
-        halt_flag = flags_code & 0x0100
+        halt_flag = (flags_code & 0x0100) >> 8
         if(halt_flag == 1):
             set_flags.append('halt')
 
@@ -99,11 +101,18 @@ class LLAMACpu(object):
     def _get_ip(self):
         return self.registers[RIP_REG]
 
-    def _update_flags(self, reg_index):
-        # 0000 0000 0HGE LNZP
-        value = self.registers[reg_index]
-        if(value == 0):
-            self.registers[RFLAG_REG]
+    def _update_flags(self, register):
+        # 0000 000H 0GEL 0NZP
+        flags = self.registers[RFLAG_REG]
+        self.registers[RFLAG_REG] = (flags & 0xFFF0)
+        value = self._reg_read(register)
+        print(f"value of register {register}: {value}")
+        if value > 0:
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x1
+        elif value == 0:
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x2
+        elif value < 0:
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x4
 
     def _decode_instruction(self, instruction):
         opcode = (instruction & 0xF000) >> 12
@@ -137,9 +146,9 @@ class LLAMACpu(object):
         elif opcode == 0xD:
             self._jnz(instruction)
         elif opcode == 0xE:
-            self._ret(instruction)
+            self._ret()
         elif opcode == 0xF:
-            self._hlt(instruction)
+            self._hlt()
 
     def _get_op_types(self, instruction):
         src_encode = (instruction & 0x00F0) >> 4
@@ -179,14 +188,11 @@ class LLAMACpu(object):
 
     def _mv(self, instruction):
         src_type, dst_type = self._get_op_types(instruction)
-        print(f"DEBUG: src_type, dst_type = {src_type} {dst_type}")
         if src_type == 'imm':
             src = self._get_next_word()
         elif src_type == 'mem_adr':
             address = self._get_next_word() + IP_START
-            print(f"DEBUG: address is {address}")
             src = self._mem_read(address)
-            print(f"DEBUG: src is {src}")
         elif src_type == 'reg':
             register = self._get_register((instruction & 0x00F0) >> 4)
             src = self._reg_read(register)
@@ -197,5 +203,62 @@ class LLAMACpu(object):
         elif dst_type == 'reg':
             register = self._get_register((instruction & 0x000F))
             self._reg_write(register, src)
-            
+            self._update_flags(register)
 
+    def _inc(self, instruction):
+        src_type, dst_type = self._get_op_types(instruction)
+        if src_type == 'mem_adr':
+            address = self._get_next_word()
+            value = self.mem_read(address)
+            self.mem_write(address, value + 1)
+        elif src_type == 'reg':
+            register = self._get_register((instruction & 0x00F0) >> 4)
+            value = self._reg_read(register)
+            self._reg_write(register, value + 1)
+            self._update_flags(register)
+
+    def _dec(self, instruction):
+        src_type, dst_type = self._get_op_types(instruction)
+        if src_type == 'mem_adr':
+            address = self._get_next_word()
+            value = self.mem_read(address)
+            self.mem_write(address, value - 1)
+        elif src_type == 'reg':
+            register = self._get_register((instruction & 0x00F0) >> 4)
+            value = self._reg_read(register)
+            self._reg_write(register, value - 1)
+            self._update_flags(register)
+
+    def _cmp(self, instruction):
+        # 0000 000H 0GEL 0NZP
+        src_type, dst_type = self._get_op_types(instruction)
+        if src_type == 'imm':
+            src = self._get_next_word()
+        elif src_type == 'mem_adr':
+            address = self._get_next_word() + IP_START
+            src = self._mem_read(address)
+
+        if dst_type == 'mem_adr':
+            address = self._get_next_word()
+            dst = self._mem_read(address)
+        elif dst_type == 'reg':
+            register = self._get_register((instruction & 0x000F))
+            dst = self._reg_read(register)
+
+        flags = self.registers[RFLAG_REG]
+        self.registers[RFLAG_REG] = (flags & 0xFF0F)
+        if src < dst:
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x10
+        elif src == dst:
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x20
+        elif src > dst:
+            self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x40
+
+    def _jnz(self, instruction):
+        flags = self.registers[RFLAG_REG]
+        address = self._get_next_word() + IP_START
+        if (flags & 0x0002) != 0x2:
+            self.registers[RIP_REG] = ushort(address)
+
+    def _hlt(self):
+        self.registers[RFLAG_REG] = self.registers[RFLAG_REG] + 0x100
