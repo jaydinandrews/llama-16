@@ -8,7 +8,7 @@ The LLAMA-16 assembler is used to translate user programs written in plain text 
 The help flags displays the usage and available options when running the assembler.
 
 ##### `-o` or `--outfile`
-The outout file flag is used to choose the name and path of the outputted binary file if the assembly translation process was successful. This flag requires a filename or path and filename.
+The output file flag is used to choose the name and path of the outputted binary file if the assembly translation process was successful. This flag requires a filename or path and filename.
 
 The default extension of the outputted binary is `.OUT`. The default location of the outputted binary is the same as the source filename.
 
